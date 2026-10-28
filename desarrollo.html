@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gestión Fábrica - Desarrollo de Producto</title>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-desarrollo-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/icon-desarrollo-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-desarrollo-180.png">
+<link rel="manifest" href="manifest-desarrollo.json">
+<meta name="theme-color" content="#7e22ce">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#1e3a5f;--amber:#f59e0b;--amberd:#d97706;--green:#10b981;--red:#ef4444;--steel:#64748b;--border:#334155;--purple:#8b5cf6;--teal:#0891b2;--pink:#ec4899}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+header{background:linear-gradient(90deg,#1e3a5f,#2d5a9e);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.brand{font-size:1.2rem;font-weight:800;color:#fff}
+.brand span{font-weight:400;opacity:.6;font-size:.85rem;margin-left:.5rem}
+.hdr-right{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.btn{border:none;border-radius:8px;padding:.5rem 1rem;font-size:.82rem;font-weight:700;cursor:pointer;transition:.15s}
+.btn-amber{background:var(--amber);color:#1a1205}
+.btn-amber:hover{background:var(--amberd)}
+.btn-ghost{background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3)}
+.btn-ghost:hover{background:rgba(255,255,255,.25)}
+.sync-pill{font-size:.72rem;color:rgba(255,255,255,.65);background:rgba(0,0,0,.2);border-radius:999px;padding:.3rem .7rem}
+
+.setup-panel{background:#1e293b;border:2px solid var(--amber);border-radius:12px;padding:1.25rem;margin:1.25rem auto;max-width:520px}
+.setup-panel h2{font-size:.95rem;font-weight:700;color:var(--amber);margin-bottom:.6rem}
+.setup-panel p{font-size:.82rem;color:#94a3b8;line-height:1.55}
+
+.filters{display:flex;gap:.6rem;flex-wrap:wrap;padding:1rem 1.25rem 0}
+.filt-chip{font-size:.74rem;font-weight:700;color:#94a3b8;background:#1e293b;border:1.5px solid var(--border);border-radius:999px;padding:.35rem .85rem;cursor:pointer;user-select:none}
+.filt-chip.on{background:var(--amber);color:#1a1205;border-color:var(--amber)}
+.search-inp{flex:1;min-width:160px;background:#1e293b;border:1.5px solid var(--border);border-radius:999px;padding:.35rem 1rem;font-size:.8rem;color:#e2e8f0}
+.search-inp:focus{outline:none;border-color:var(--amber)}
+
+.board{display:flex;gap:.85rem;padding:1.25rem;overflow-x:auto;align-items:flex-start}
+.col{background:#131c2e;border-radius:12px;min-width:250px;max-width:250px;flex-shrink:0;display:flex;flex-direction:column;max-height:calc(100vh - 170px)}
+.col.dragover{outline:2px dashed var(--amber);outline-offset:-2px}
+.col-hdr{padding:.75rem .9rem;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.col-t{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:#fff}
+.col-n{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.75);background:rgba(0,0,0,.2);border-radius:999px;padding:.1rem .55rem}
+.col-add{background:none;border:none;color:rgba(255,255,255,.7);font-size:1.1rem;cursor:pointer;line-height:1;padding:0 .2rem}
+.col-add:hover{color:#fff}
+.col-body{padding:.6rem;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:.55rem}
+.col-empty{font-size:.72rem;color:#475569;text-align:center;padding:1.2rem .5rem;line-height:1.5}
+
+.card{background:#1e293b;border:1px solid var(--border);border-left:3px solid var(--steel);border-radius:9px;padding:.65rem .75rem;cursor:grab;transition:.12s}
+.card:hover{border-color:#475569;background:#24334a}
+.card.dragging{opacity:.4}
+.card.p-alta{border-left-color:var(--red)}
+.card.p-media{border-left-color:var(--amber)}
+.card.p-baja{border-left-color:#475569}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.4rem}
+.card-nom{font-size:.84rem;font-weight:700;color:#f1f5f9;line-height:1.3}
+.card-cat{display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.2px;color:#93c5fd;background:rgba(59,130,246,.12);border-radius:999px;padding:.12rem .5rem;margin-top:.35rem}
+.card-nota{font-size:.72rem;color:#94a3b8;margin-top:.4rem;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:.5rem;font-size:.66rem;color:#64748b}
+.card-days{font-variant-numeric:tabular-nums}
+.card-days.stale{color:var(--red);font-weight:700}
+.card-fecha{color:#fbbf24}
+
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);align-items:center;justify-content:center;z-index:50;padding:1rem}
+.ov.on{display:flex}
+.modal{background:#1e293b;border:1px solid var(--border);border-radius:14px;padding:1.3rem;max-width:440px;width:100%;max-height:88vh;overflow-y:auto}
+.modal-t{font-size:1.02rem;font-weight:800;color:#fff;margin-bottom:1rem}
+.f-row{margin-bottom:.9rem}
+.f-lbl{font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px;margin-bottom:.35rem;display:block}
+.f-inp,.f-sel,.f-txt{width:100%;background:#0f172a;border:1.5px solid var(--border);border-radius:8px;padding:.55rem .7rem;font-size:.85rem;color:#e2e8f0;font-family:inherit}
+.f-inp:focus,.f-sel:focus,.f-txt:focus{outline:none;border-color:var(--amber)}
+.f-txt{resize:vertical;min-height:70px}
+.f-grid2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.modal-act{display:flex;justify-content:space-between;align-items:center;margin-top:1.2rem;gap:.6rem}
+.btn-del{background:none;border:none;color:var(--red);font-size:.78rem;font-weight:700;cursor:pointer}
+.btn-del:hover{text-decoration:underline}
+.modal-act-right{display:flex;gap:.5rem}
+.btn-cancel{background:#334155;color:#e2e8f0}
+.btn-cancel:hover{background:#475569}
+
+.card-hist{color:#c4b5fd;font-weight:700}
+.card-foto{color:#67e8f9;font-weight:700}
+
+.img-tools{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;flex-wrap:wrap}
+.img-upload-btn{display:inline-block;cursor:pointer}
+.img-status{font-size:.7rem;color:#94a3b8}
+.img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.img-thumb{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:#0f172a;cursor:pointer}
+.img-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.img-del{position:absolute;top:.2rem;right:.2rem;background:rgba(0,0,0,.65);color:#fca5a5;border:none;border-radius:50%;width:1.3rem;height:1.3rem;font-size:.75rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.img-del:hover{background:rgba(239,68,68,.85);color:#fff}
+.img-empty{font-size:.72rem;color:#475569;text-align:center;padding:.6rem .5rem;grid-column:1/-1}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:60;align-items:center;justify-content:center;padding:1.5rem}
+.lightbox.on{display:flex}
+.lightbox img{max-width:100%;max-height:100%;border-radius:8px}
+.lightbox-close{position:absolute;top:1rem;right:1.2rem;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50%;width:2.2rem;height:2.2rem;font-size:1.1rem;cursor:pointer}
+
+.hist-form{background:#0f172a;border:1px solid var(--border);border-radius:8px;padding:.6rem;margin-bottom:.7rem}
+.hist-form-row{display:flex;gap:.5rem;margin-bottom:.5rem}
+.hist-list{display:flex;flex-direction:column;gap:.5rem;max-height:220px;overflow-y:auto}
+.hist-item{background:#0f172a;border:1px solid var(--border);border-left:3px solid var(--purple);border-radius:8px;padding:.5rem .6rem}
+.hist-item-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.3rem;flex-wrap:wrap}
+.hist-campo{font-size:.64rem;font-weight:700;color:#c4b5fd;background:rgba(139,92,246,.15);border-radius:999px;padding:.1rem .55rem;text-transform:uppercase;letter-spacing:.2px}
+.hist-fecha{font-size:.64rem;color:#64748b}
+.hist-desc{font-size:.76rem;color:#e2e8f0;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.hist-resp{font-size:.66rem;color:#94a3b8;margin-top:.35rem}
+.hist-empty{font-size:.72rem;color:#475569;text-align:center;padding:.8rem .5rem}
+
+.empty-board{color:#64748b;font-size:.85rem;text-align:center;padding:3rem 1rem}
+@media(max-width:700px){
+  .col{min-width:78vw;max-width:78vw}
+  .board{padding:.85rem}
+}
+</style>
+<script src="demo-db.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="brand">Gestión Fábrica <span>Desarrollo de Producto</span></div>
+  <div class="hdr-right">
+    <span class="sync-pill" id="sync-pill">Cargando...</span>
+    <button class="btn btn-amber" onclick="openQuick()">+ Nueva referencia</button>
+  </div>
+</header>
+
+<div class="filters">
+  <input class="search-inp" id="search-inp" placeholder="Buscar por nombre..." oninput="renderBoard()">
+  <span class="filt-chip" data-cat="" onclick="toggleFiltCat(this)">Todas</span>
+  <span class="filt-chip" data-cat="Shapewear/Underwear" onclick="toggleFiltCat(this)">Shapewear/Underwear</span>
+  <span class="filt-chip" data-cat="Activewear" onclick="toggleFiltCat(this)">Activewear</span>
+  <span class="filt-chip" data-cat="Medias/Pantyhose" onclick="toggleFiltCat(this)">Medias/Pantyhose</span>
+  <span class="filt-chip" data-cat="Otro" onclick="toggleFiltCat(this)">Otro</span>
+</div>
+
+<div class="board" id="board"></div>
+
+<!-- Modal: captura rapida de referencia -->
+<div class="ov" id="ov-quick">
+  <div class="modal">
+    <div class="modal-t">Nueva referencia</div>
+    <div class="f-row">
+      <label class="f-lbl">Nombre / concepto</label>
+      <input class="f-inp" id="q-nombre" placeholder="Ej: Panty control cintura alta en algodon">
+    </div>
+    <div class="f-row">
+      <label class="f-lbl">Nota (opcional)</label>
+      <textarea class="f-txt" id="q-nota" placeholder="De donde viene, codigo de referencia, inspiracion..."></textarea>
+    </div>
+    <div class="modal-act">
+      <span></span>
+      <div class="modal-act-right">
+        <button class="btn btn-cancel" onclick="closeOv('ov-quick')">Cancelar</button>
+        <button class="btn btn-amber" onclick="saveQuick()">Guardar referencia</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: tarjeta completa -->
+<div class="ov" id="ov-card">
+  <div class="modal">
+    <div class="modal-t" id="card-modal-t">Desarrollo</div>
+    <div class="f-row">
+      <label class="f-lbl">Nombre / concepto</label>
+      <input class="f-inp" id="c-nombre">
+    </div>
+    <div class="f-grid2">
+      <div class="f-row">
+        <label class="f-lbl">Categoria</label>
+        <select class="f-sel" id="c-categoria">
+          <option value="">Sin categoria</option>
+          <option value="Shapewear/Underwear">Shapewear/Underwear</option>
+          <option value="Activewear">Activewear</option>
+          <option value="Medias/Pantyhose">Medias/Pantyhose</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="f-row">
+        <label class="f-lbl">Prioridad</label>
+        <select class="f-sel" id="c-prioridad">
+          <option value="alta">Alta</option>
+          <option value="media" selected>Media</option>
+          <option value="baja">Baja</option>
+        </select>
+      </div>
+    </div>
+    <div class="f-grid2">
+      <div class="f-row">
+        <label class="f-lbl">Etapa</label>
+        <select class="f-sel" id="c-etapa"></select>
+      </div>
+      <div class="f-row">
+        <label class="f-lbl">Fecha objetivo</label>
+        <input class="f-inp" type="date" id="c-fecha">
+      </div>
+    </div>
+    <div class="f-row">
+      <label class="f-lbl">Notas</label>
+      <textarea class="f-txt" id="c-nota"></textarea>
+    </div>
+
+    <div class="f-row">
+      <label class="f-lbl">Fotos, bosquejos y ayudas visuales</label>
+      <div class="img-tools">
+        <label class="btn btn-ghost img-upload-btn">
+          + Agregar fotos
+          <input type="file" id="img-input" accept="image/*" multiple style="display:none" onchange="onImgSelect(event)">
+        </label>
+        <span class="img-status" id="img-status"></span>
+      </div>
+      <div class="img-grid" id="img-grid"></div>
+    </div>
+
+    <div class="f-row">
+      <label class="f-lbl">Historial de cambios</label>
+      <div class="hist-form">
+        <div class="hist-form-row">
+          <select class="f-sel" id="h-campo" style="flex:1">
+            <option value="Tallaje">Tallaje</option>
+            <option value="Modelo">Modelo</option>
+            <option value="Hilos">Hilos</option>
+            <option value="Color">Color</option>
+            <option value="Otro">Otro</option>
+          </select>
+          <input class="f-inp" id="h-resp" placeholder="Quien lo hizo" style="flex:1">
+        </div>
+        <textarea class="f-txt" id="h-desc" placeholder="Que cambio y por que..." style="min-height:50px;margin-bottom:.5rem"></textarea>
+        <button class="btn btn-amber" style="width:100%" onclick="addHistorial()">Registrar cambio</button>
+      </div>
+      <div class="hist-list" id="hist-list"></div>
+    </div>
+
+    <div class="modal-act">
+      <button class="btn-del" onclick="deleteCard()">Eliminar</button>
+      <div class="modal-act-right">
+        <button class="btn btn-cancel" onclick="closeOv('ov-card')">Cerrar</button>
+        <button class="btn btn-amber" onclick="saveCardModal()">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="event.stopPropagation();closeLightbox()">&times;</button>
+  <img id="lightbox-img" src="" onclick="event.stopPropagation()">
+</div>
+
+<script>
+/* ============================================================
+   Desarrollo de Producto - tablero Kanban de nuevos desarrollos.
+   Guarda cada tarjeta como un documento en la MISMA coleccion
+   'fichas' de Firestore que ya usan Produccion/Hilos/Planeacion
+   (permisos ya probados y abiertos), distinguido con tipo:'desarrollo'
+   e id con prefijo 'DEV-'. No usa Google Sheets / Apps Script: todo
+   vive en la nube de Firestore directamente.
+   ============================================================ */
+
+var ETAPAS = [
+  {id:'referencia',  label:'Referencia',          col:'#581c87'},
+  {id:'diseno',      label:'Diseno',              col:'#1e3a5f'},
+  {id:'circulares',  label:'Circulares',          col:'#9a3412'},
+  {id:'tintoreria',  label:'Tintoreria',          col:'#be185d'},
+  {id:'confeccion',  label:'Confeccion',          col:'#854d0e'},
+  {id:'ingenieria',  label:'Ingenieria',          col:'#0e7490'},
+  {id:'aprobacion',  label:'Aprobacion gerencia', col:'#4d7c0f'},
+  {id:'produccion',  label:'Produccion',          col:'#065f46'}
+];
+// Etapas del flujo anterior -> flujo nuevo (las tarjetas existentes se migran solas)
+var ETAPA_MAP = {idea:'referencia', muestra:'circulares', ficha:'ingenieria'};
+function migrarEtapas(list) {
+  var cambiadas = [];
+  list.forEach(function(c) {
+    var n = ETAPA_MAP[c.etapa];
+    if (n) { c.etapa = n; cambiadas.push(c); }
+  });
+  return cambiadas;
+}
+
+var CARDS = [];
+var filtCat = '';
+var dragId = null;
+
+/* ---------- Firebase (mismo proyecto que el resto de Gestión Fábrica) ---------- */
+var FICHAS_FB_CFG = {projectId:'demo'};
+var _fichasDb = null;
+function initFichasFirebase() {
+  if (_fichasDb) return _fichasDb;
+  try {
+    if (typeof firebase === 'undefined') return null;
+    var app = firebase.apps && firebase.apps.some(function(a){return a.name==='fichas';})
+      ? firebase.app('fichas') : firebase.initializeApp(FICHAS_FB_CFG, 'fichas');
+    _fichasDb = app.firestore();
+    return _fichasDb;
+  } catch(e) { console.error('Firebase fichas error', e); return null; }
+}
+
+function setPill(txt, ok) {
+  var el = document.getElementById('sync-pill');
+  el.textContent = txt;
+  el.style.color = ok === false ? '#fca5a5' : (ok === true ? '#6ee7b7' : 'rgba(255,255,255,.65)');
+}
+
+/* ---------- Carga / guardado ---------- */
+function loadCards() {
+  // Pinta de inmediato lo que haya en cache local, mientras llega la nube.
+  try {
+    var cached = JSON.parse(localStorage.getItem('gf_dev_cards') || '[]');
+    if (cached.length) { migrarEtapas(cached); CARDS = cached; renderBoard(); }
+  } catch(e) {}
+
+  var db = initFichasFirebase();
+  if (!db) { setPill('Sin conexion a la nube', false); return; }
+  setPill('Cargando...');
+  db.collection('fichas').where('tipo', '==', 'desarrollo').get().then(function(snap) {
+    var list = [];
+    snap.forEach(function(doc) { list.push(doc.data()); });
+    migrarEtapas(list).forEach(saveCardToCloud);
+    CARDS = list;
+    try { localStorage.setItem('gf_dev_cards', JSON.stringify(CARDS)); } catch(e) {}
+    renderBoard();
+    setPill(CARDS.length + ' desarrollos - sincronizado', true);
+  }).catch(function(e) {
+    console.warn('Error cargando desarrollos', e);
+    setPill('Error de conexion (viendo copia local)', false);
+  });
+}
+
+function saveCardToCloud(card) {
+  var db = initFichasFirebase();
+  if (!db) { setPill('Sin conexion - no se guardo en la nube', false); return; }
+  db.collection('fichas').doc(card.id).set(card).then(function() {
+    setPill('Guardado', true);
+  }).catch(function(e) {
+    console.warn('Error guardando desarrollo', e);
+    setPill('Error guardando en la nube', false);
+  });
+}
+
+function deleteCardFromCloud(id) {
+  var db = initFichasFirebase();
+  if (!db) return;
+  db.collection('fichas').doc(id).delete().catch(function(e) {
+    console.warn('Error eliminando desarrollo', e);
+  });
+}
+
+function persistLocal() {
+  try { localStorage.setItem('gf_dev_cards', JSON.stringify(CARDS)); } catch(e) {}
+}
+
+/* ---------- Render ---------- */
+function daysSince(ts) {
+  if (!ts) return 0;
+  return Math.floor((Date.now() - ts) / 86400000);
+}
+
+function cardHtml(c) {
+  var catTxt = c.categoria || '';
+  var nota = (c.nota || '').length > 110 ? c.nota.slice(0,108) + '...' : (c.nota || '');
+  var d = daysSince(c.updatedAt || c.createdAt);
+  var staleCls = d >= 14 ? ' stale' : '';
+  var histCount = (c.historial || []).length;
+  var fotoCount = c.fotoCount || 0;
+  var fechaHtml = c.fecha ? '<span class="card-fecha">' + c.fecha + '</span>' : '<span></span>';
+  var histHtml = histCount ? '<span class="card-hist" title="' + histCount + ' cambio(s) registrado(s)">&#9998; ' + histCount + '</span>' : '';
+  var fotoHtml = fotoCount ? '<span class="card-foto" title="' + fotoCount + ' foto(s)">&#128247; ' + fotoCount + '</span>' : '';
+  var h = '<div class="card p-' + (c.prioridad||'media') + '" draggable="true" data-id="' + c.id + '"' +
+    ' ondragstart="onDragStart(event)" ondragend="onDragEnd(event)" onclick="openCard(\'' + c.id + '\')">';
+  h += '<div class="card-top"><div class="card-nom">' + escHtml(c.nombre || '(sin nombre)') + '</div></div>';
+  if (catTxt) h += '<span class="card-cat">' + escHtml(catTxt) + '</span>';
+  if (nota) h += '<div class="card-nota">' + escHtml(nota) + '</div>';
+  h += '<div class="card-meta"><span class="card-days' + staleCls + '">' + d + ' dia' + (d===1?'':'s') + ' aqui</span>';
+  h += '<span style="display:flex;align-items:center;gap:.5rem">' + fotoHtml + histHtml + fechaHtml + '</span></div>';
+  h += '</div>';
+  return h;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderBoard() {
+  var board = document.getElementById('board');
+  var q = (document.getElementById('search-inp').value || '').toLowerCase().trim();
+  var h = '';
+  ETAPAS.forEach(function(et) {
+    var items = CARDS.filter(function(c) {
+      if (c.etapa !== et.id) return false;
+      if (filtCat && c.categoria !== filtCat) return false;
+      if (q && (c.nombre||'').toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+    items.sort(function(a,b) { return (b.updatedAt||0) - (a.updatedAt||0); });
+    h += '<div class="col" data-etapa="' + et.id + '" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">';
+    h += '<div class="col-hdr" style="background:' + et.col + '">';
+    h += '<span class="col-t">' + et.label + '</span>';
+    h += '<span style="display:flex;align-items:center;gap:.4rem">';
+    h += '<span class="col-n">' + items.length + '</span>';
+    if (et.id === 'referencia') h += '<button class="col-add" onclick="openQuick()" title="Agregar referencia">+</button>';
+    h += '</span></div>';
+    h += '<div class="col-body">';
+    if (!items.length) {
+      h += '<div class="col-empty">' + (et.id==='referencia' ? 'Sin referencias nuevas.<br>Usa "+ Nueva referencia" arriba.' : 'Sin desarrollos en esta etapa.') + '</div>';
+    } else {
+      items.forEach(function(c) { h += cardHtml(c); });
+    }
+    h += '</div></div>';
+  });
+  board.innerHTML = h;
+}
+
+/* ---------- Filtros ---------- */
+function toggleFiltCat(el) {
+  var chips = document.querySelectorAll('.filt-chip');
+  for (var i=0;i<chips.length;i++) chips[i].classList.remove('on');
+  el.classList.add('on');
+  filtCat = el.getAttribute('data-cat') || '';
+  renderBoard();
+}
+
+/* ---------- Drag and drop ---------- */
+function onDragStart(e) {
+  dragId = e.target.getAttribute('data-id');
+  e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function onDragEnd(e) { e.target.classList.remove('dragging'); }
+function onDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('dragover'); }
+function onDragLeave(e) { e.currentTarget.classList.remove('dragover'); }
+function onDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  var etapa = e.currentTarget.getAttribute('data-etapa');
+  if (!dragId) return;
+  var card = CARDS.find(function(c) { return c.id === dragId; });
+  if (!card || card.etapa === etapa) { dragId = null; return; }
+  card.etapa = etapa;
+  card.updatedAt = Date.now();
+  persistLocal();
+  renderBoard();
+  saveCardToCloud(card);
+  dragId = null;
+}
+
+/* ---------- Modal: captura rapida ---------- */
+function openQuick() {
+  document.getElementById('q-nombre').value = '';
+  document.getElementById('q-nota').value = '';
+  document.getElementById('ov-quick').classList.add('on');
+  setTimeout(function() { document.getElementById('q-nombre').focus(); }, 50);
+}
+function saveQuick() {
+  var nombre = (document.getElementById('q-nombre').value || '').trim();
+  if (!nombre) { document.getElementById('q-nombre').focus(); return; }
+  var nota = (document.getElementById('q-nota').value || '').trim();
+  var now = Date.now();
+  var card = {
+    id: 'DEV-' + now + '-' + Math.random().toString(36).slice(2,7),
+    tipo: 'desarrollo',
+    nombre: nombre,
+    categoria: '',
+    prioridad: 'media',
+    etapa: 'referencia',
+    nota: nota,
+    fecha: '',
+    createdAt: now,
+    updatedAt: now
+  };
+  CARDS.push(card);
+  persistLocal();
+  renderBoard();
+  saveCardToCloud(card);
+  closeOv('ov-quick');
+}
+
+/* ---------- Modal: tarjeta completa ---------- */
+var editingId = null;
+function openCard(id) {
+  var c = CARDS.find(function(x) { return x.id === id; });
+  if (!c) return;
+  editingId = id;
+  document.getElementById('card-modal-t').textContent = c.nombre || 'Desarrollo';
+  document.getElementById('c-nombre').value = c.nombre || '';
+  document.getElementById('c-categoria').value = c.categoria || '';
+  document.getElementById('c-prioridad').value = c.prioridad || 'media';
+  document.getElementById('c-fecha').value = c.fecha || '';
+  document.getElementById('c-nota').value = c.nota || '';
+  var sel = document.getElementById('c-etapa');
+  sel.innerHTML = ETAPAS.map(function(et) { return '<option value="' + et.id + '">' + et.label + '</option>'; }).join('');
+  sel.value = c.etapa;
+  document.getElementById('h-campo').value = 'Tallaje';
+  document.getElementById('h-desc').value = '';
+  try { document.getElementById('h-resp').value = localStorage.getItem('gf_dev_user') || ''; } catch(e) {}
+  renderHistorial(c);
+  loadImagesForCard(c.id);
+  document.getElementById('ov-card').classList.add('on');
+}
+function saveCardModal() {
+  var c = CARDS.find(function(x) { return x.id === editingId; });
+  if (!c) return;
+  var nombre = (document.getElementById('c-nombre').value || '').trim();
+  if (!nombre) { document.getElementById('c-nombre').focus(); return; }
+  c.nombre = nombre;
+  c.categoria = document.getElementById('c-categoria').value;
+  c.prioridad = document.getElementById('c-prioridad').value;
+  c.etapa = document.getElementById('c-etapa').value;
+  c.fecha = document.getElementById('c-fecha').value;
+  c.nota = document.getElementById('c-nota').value;
+  c.updatedAt = Date.now();
+  persistLocal();
+  renderBoard();
+  saveCardToCloud(c);
+  closeOv('ov-card');
+}
+/* ---------- Historial de cambios ---------- */
+function renderHistorial(c) {
+  var list = document.getElementById('hist-list');
+  var hist = (c.historial || []).slice().sort(function(a,b) { return (b.ts||0) - (a.ts||0); });
+  if (!hist.length) { list.innerHTML = '<div class="hist-empty">Sin cambios registrados todavia.</div>'; return; }
+  var h = '';
+  hist.forEach(function(e) {
+    var d = new Date(e.ts);
+    var fechaStr = d.toLocaleDateString('es-CO', {day:'2-digit', month:'short', year:'numeric'}) + ' - ' + d.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
+    h += '<div class="hist-item">';
+    h += '<div class="hist-item-top"><span class="hist-campo">' + escHtml(e.campo || 'Otro') + '</span><span class="hist-fecha">' + fechaStr + '</span></div>';
+    h += '<div class="hist-desc">' + escHtml(e.descripcion || '') + '</div>';
+    h += '<div class="hist-resp">Por: ' + escHtml(e.responsable || 'Sin especificar') + '</div>';
+    h += '</div>';
+  });
+  list.innerHTML = h;
+}
+function addHistorial() {
+  var c = CARDS.find(function(x) { return x.id === editingId; });
+  if (!c) return;
+  var desc = (document.getElementById('h-desc').value || '').trim();
+  if (!desc) { document.getElementById('h-desc').focus(); return; }
+  var campo = document.getElementById('h-campo').value;
+  var resp = (document.getElementById('h-resp').value || '').trim();
+  if (!c.historial) c.historial = [];
+  var now = Date.now();
+  c.historial.push({ ts: now, campo: campo, descripcion: desc, responsable: resp || 'Sin especificar' });
+  c.updatedAt = now;
+  try { if (resp) localStorage.setItem('gf_dev_user', resp); } catch(e) {}
+  document.getElementById('h-desc').value = '';
+  persistLocal();
+  renderBoard();
+  renderHistorial(c);
+  saveCardToCloud(c);
+}
+
+function deleteCard() {
+  if (!editingId) return;
+  if (!confirm('Eliminar este desarrollo? No se puede deshacer.')) return;
+  var id = editingId;
+  CARDS = CARDS.filter(function(c) { return c.id !== id; });
+  persistLocal();
+  renderBoard();
+  deleteCardFromCloud(id);
+  // Limpia tambien las fotos asociadas, para no dejar basura en la nube.
+  var db = initFichasFirebase();
+  if (db) {
+    CARD_IMAGES.forEach(function(img) {
+      db.collection('fichas').doc(img.id).delete().catch(function(e) { console.warn('Error eliminando foto', e); });
+    });
+  }
+  CARD_IMAGES = [];
+  closeOv('ov-card');
+}
+
+/* ---------- Fotos, bosquejos y ayudas visuales ---------- */
+var CARD_IMAGES = [];
+
+function loadImagesForCard(cardId) {
+  CARD_IMAGES = [];
+  renderImages();
+  var statusEl = document.getElementById('img-status');
+  var db = initFichasFirebase();
+  if (!db) { statusEl.textContent = 'Sin conexion - no se pueden ver las fotos'; return; }
+  statusEl.textContent = 'Cargando fotos...';
+  db.collection('fichas').where('tipo', '==', 'imagen_desarrollo').where('cardId', '==', cardId).get().then(function(snap) {
+    var list = [];
+    snap.forEach(function(doc) { list.push(doc.data()); });
+    list.sort(function(a,b) { return (a.ts||0) - (b.ts||0); });
+    // Solo reemplaza si seguimos viendo la misma tarjeta (evita pisar datos si el usuario ya cambio de tarjeta).
+    if (editingId === cardId) { CARD_IMAGES = list; renderImages(); statusEl.textContent = ''; }
+  }).catch(function(e) {
+    console.warn('Error cargando fotos', e);
+    if (editingId === cardId) statusEl.textContent = 'Error cargando fotos';
+  });
+}
+
+function renderImages() {
+  var grid = document.getElementById('img-grid');
+  if (!grid) return;
+  if (!CARD_IMAGES.length) { grid.innerHTML = '<div class="img-empty">Sin fotos todavia.</div>'; return; }
+  var h = '';
+  CARD_IMAGES.forEach(function(img) {
+    h += '<div class="img-thumb" onclick="openLightbox(\'' + img.id + '\')">';
+    h += '<img src="' + img.dataUrl + '" loading="lazy" alt="Foto del desarrollo">';
+    h += '<button class="img-del" onclick="event.stopPropagation();deleteImage(\'' + img.id + '\')" title="Eliminar foto">&times;</button>';
+    h += '</div>';
+  });
+  grid.innerHTML = h;
+}
+
+function openLightbox(id) {
+  var img = CARD_IMAGES.find(function(x) { return x.id === id; });
+  if (!img) return;
+  document.getElementById('lightbox-img').src = img.dataUrl;
+  document.getElementById('lightbox').classList.add('on');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('on'); }
+
+// Redimensiona y recomprime la foto en el navegador antes de subirla, para
+// que quepa comoda dentro del limite de 1MB por documento de Firestore
+// (una foto de camara sin comprimir puede pesar varios MB).
+function compressImage(file, maxDim, quality) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var img = new Image();
+      img.onload = function() {
+        var w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = function() { reject(new Error('No se pudo leer esa imagen')); };
+      img.src = ev.target.result;
+    };
+    reader.onerror = function() { reject(new Error('No se pudo leer el archivo')); };
+    reader.readAsDataURL(file);
+  });
+}
+
+function onImgSelect(ev) {
+  var files = Array.prototype.slice.call(ev.target.files || []);
+  ev.target.value = ''; // permite volver a elegir el mismo archivo despues
+  if (!files.length || !editingId) return;
+  var cardId = editingId;
+  var c = CARDS.find(function(x) { return x.id === cardId; });
+  if (!c) return;
+  var statusEl = document.getElementById('img-status');
+  var db = initFichasFirebase();
+  if (!db) { statusEl.textContent = 'Sin conexion - no se pudo subir'; return; }
+  var done = 0, total = files.length, fallas = 0;
+  statusEl.textContent = 'Subiendo 1 de ' + total + '...';
+  files.forEach(function(file) {
+    compressImage(file, 1280, 0.68).then(function(dataUrl) {
+      var now = Date.now();
+      var imgDoc = {
+        id: 'IMG-' + now + '-' + Math.random().toString(36).slice(2,7),
+        tipo: 'imagen_desarrollo',
+        cardId: cardId,
+        dataUrl: dataUrl,
+        ts: now
+      };
+      return db.collection('fichas').doc(imgDoc.id).set(imgDoc).then(function() {
+        if (editingId === cardId) { CARD_IMAGES.push(imgDoc); renderImages(); }
+        c.fotoCount = (c.fotoCount || 0) + 1;
+        c.updatedAt = now;
+        persistLocal();
+        renderBoard();
+        saveCardToCloud(c);
+      });
+    }).catch(function(e) {
+      console.warn('Error subiendo foto', e);
+      fallas++;
+    }).then(function() {
+      done++;
+      if (editingId === cardId) {
+        statusEl.textContent = done < total ? ('Subiendo ' + (done+1) + ' de ' + total + '...') :
+          (fallas ? (fallas + ' foto(s) no se pudieron subir') : '');
+      }
+    });
+  });
+}
+
+function deleteImage(id) {
+  if (!confirm('Eliminar esta foto? No se puede deshacer.')) return;
+  var cardId = editingId;
+  var c = CARDS.find(function(x) { return x.id === cardId; });
+  CARD_IMAGES = CARD_IMAGES.filter(function(x) { return x.id !== id; });
+  renderImages();
+  if (c) {
+    c.fotoCount = Math.max(0, (c.fotoCount || 1) - 1);
+    c.updatedAt = Date.now();
+    persistLocal();
+    renderBoard();
+    saveCardToCloud(c);
+  }
+  var db = initFichasFirebase();
+  if (db) db.collection('fichas').doc(id).delete().catch(function(e) { console.warn('Error eliminando foto', e); });
+}
+
+function closeOv(id) { document.getElementById(id).classList.remove('on'); }
+
+/* ---------- Arranque ---------- */
+loadCards();
+</script>
+
+</body>
+</html>

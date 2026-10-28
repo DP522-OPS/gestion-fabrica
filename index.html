@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gestión Fábrica - Panel Central de Planta</title>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-panel-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/icon-panel-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-panel-180.png">
+<link rel="manifest" href="manifest-panel.json">
+<meta name="theme-color" content="#1e3a5f">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#fff;color:#111827;min-height:100vh}
+.wrap{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:230px;flex-shrink:0;background:#0f2942;color:#fff;padding:28px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand-box{padding:0 24px 28px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:14px}
+.brand-name{font-size:17px;font-weight:700;letter-spacing:.2px}
+.brand-sub{font-size:10.5px;color:#8ea3b8;margin-top:2px}
+.navitem{display:block;padding:12px 24px;font-size:13.5px;color:#c3ccd6;text-decoration:none;border-left:2px solid transparent;background:none;text-align:left;width:100%;font-family:inherit;cursor:pointer;transition:.15s}
+.navitem:hover{color:#fff;background:rgba(255,255,255,.04)}
+.navitem.active{border-left-color:#c9a227;background:rgba(255,255,255,.06);color:#fff;font-weight:600}
+
+/* Status & Footer en Sidebar */
+.sidebar-foot{margin-top:auto;padding:16px 24px;border-top:1px solid rgba(255,255,255,.1);font-size:10.5px;color:#6b7f93}
+.net-status{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-weight:600;color:#8ea3b8}
+.net-dot{width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981}
+.net-dot.offline{background:#ef4444;box-shadow:0 0 6px #ef4444}
+
+/* Content */
+.content{flex-grow:1;padding:44px 48px;max-width:820px}
+.content.wide{max-width:1100px}
+.section{display:none}
+.section.active{display:block}
+.sec-title{font-size:22px;font-weight:700;color:#111111;margin-bottom:4px}
+.sec-sub{font-size:13px;color:#818a94;margin-bottom:32px}
+
+.row{display:flex;align-items:center;gap:18px;padding:20px;border:1px solid #e6e8eb;margin-bottom:12px;text-decoration:none;color:inherit;transition:.15s}
+.row:hover{background:#f7f8f9;border-color:#d7dbe0}
+.row-icon{width:42px;height:42px;border-radius:8px;background:#eef1f4;display:flex;align-items:center;justify-content:center;color:#0f2942;flex-shrink:0}
+.row-t{font-size:15.5px;font-weight:600;color:#111111}
+.row-d{font-size:12.5px;color:#818a94;margin-top:2px;line-height:1.5}
+.row-tag{font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.tag-op{color:#0f7a4d;background:#e9f7f0}
+.tag-sup{color:#1d4ed8;background:#eaf0fe}
+.tag-ref{color:#6d28d9;background:#f3edfe}
+.tag-cfg{color:#92400e;background:#fdf1de}
+.tag-plan{color:#b45309;background:#fef3e0}
+.tag-dev{color:#7e22ce;background:#f5eaff}
+.tag-rh{color:#be185d;background:#fdeaf3}
+
+.guide-row{display:flex;align-items:center;gap:14px;padding:16px 20px;border:1px solid #e6e8eb;margin-bottom:10px;text-decoration:none;color:inherit;transition:.15s}
+.guide-row:hover{background:#f7f8f9;border-color:#d7dbe0}
+.guide-icon{color:#818a94;flex-shrink:0}
+.guide-t{font-size:14px;font-weight:600;color:#111111}
+.guide-d{font-size:12px;color:#818a94;margin-top:1px}
+
+/* Estilos de flujo detallado en zigzag */
+.fc{margin-top:6px}
+.fc-fase{font-size:11px;font-weight:800;letter-spacing:1px;color:#c9a227;text-transform:uppercase;margin:26px 0 10px}
+.fc-fase:first-child{margin-top:0}
+.fc-grid{position:relative}
+.fc-grid::before{content:'';position:absolute;left:50%;top:6px;bottom:6px;width:2px;background:#d7dbe0;transform:translateX(-1px);z-index:0}
+.fc-row{position:relative;display:flex;margin:10px 0}
+.fc-row.left{justify-content:flex-start}
+.fc-row.right{justify-content:flex-end}
+.fc-dot{position:absolute;left:50%;top:26px;width:13px;height:13px;border-radius:50%;background:#0f2942;border:2px solid #fff;box-shadow:0 0 0 1px #c3ccd6;transform:translate(-50%,-50%);z-index:1}
+.fc-box{width:calc(50% - 28px);border:1px solid #e6e8eb;padding:14px 17px;position:relative;z-index:1;background:#fff}
+.fc-step{font-size:10px;font-weight:800;letter-spacing:.6px;color:#c9a227;text-transform:uppercase;margin-bottom:4px}
+.fc-title{font-size:14.5px;font-weight:700;color:#111111}
+.fc-desc{font-size:12.3px;color:#5b6572;margin-top:5px;line-height:1.65}
+.fc-tag{display:inline-flex;align-items:center;gap:6px;margin-top:11px;font-size:10.5px;font-weight:700;letter-spacing:.2px;color:#0f2942;background:#eef1f4;padding:4px 11px;border-radius:20px;text-decoration:none}
+.fc-tag:hover{background:#dfe4e9}
+.fc-down{display:flex;justify-content:center;padding:4px 0 2px}
+.fc-down svg{color:#c3ccd6}
+.fc-merge{border:1px dashed #d7dbe0;padding:18px 20px;margin:4px 0 18px;background:#fafbfc}
+.fc-merge-t{font-size:10.5px;font-weight:800;letter-spacing:.6px;color:#818a94;text-transform:uppercase;margin-bottom:10px}
+.fc-merge-row{display:flex;flex-wrap:wrap;gap:10px}
+.fc-chip{font-size:11.5px;color:#374151;background:#fff;border:1px solid #e6e8eb;padding:6px 12px;border-radius:20px}
+.fc-final{width:100%;border:1.5px solid #0f2942;padding:18px 20px;background:#0f2942;color:#fff}
+.fc-final .fc-step{color:#c9a227}
+.fc-final .fc-title{color:#fff;font-size:15.5px}
+.fc-final .fc-desc{color:#c3ccd6}
+.fc-final .fc-tag{background:rgba(255,255,255,.12);color:#fff}
+.fc-final .fc-tag:hover{background:rgba(255,255,255,.2)}
+.flow-note{display:flex;gap:10px;align-items:flex-start;padding:14px 18px;background:#fdf7e8;border:1px solid #f0e2b8;margin-top:26px;font-size:12.5px;color:#7a5c05;line-height:1.6}
+
+@media(max-width:760px){
+  .fc-grid::before{display:none}
+  .fc-row{display:block}
+  .fc-dot{display:none}
+  .fc-box{width:100%;margin-bottom:12px}
+}
+@media(max-width:720px){
+  .wrap{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:static;flex-direction:row;overflow-x:auto;padding:16px}
+  .brand-box{display:none}
+  .sidebar-foot{display:none}
+  .navitem{white-space:nowrap;border-left:none;border-bottom:2px solid transparent;padding:10px 16px}
+  .navitem.active{border-left:none;border-bottom-color:#c9a227}
+  .content{padding:28px 20px}
+}
+</style>
+<script src="demo-db.js"></script>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- BARRA LATERAL -->
+  <div class="sidebar" id="sidebarNav">
+    <div class="brand-box">
+      <div class="brand-name">Gestión Fábrica</div>
+      <div class="brand-sub">Panel de herramientas</div>
+    </div>
+
+    <button class="navitem active" data-sec="flujo" onclick="showSection('flujo')">Cómo funciona</button>
+    <button class="navitem" data-sec="produccion" onclick="showSection('produccion')">Producción diaria</button>
+    <button class="navitem" data-sec="planta" onclick="showSection('planta')">Planta virtual</button>
+    <button class="navitem" data-sec="maquinas" onclick="showSection('maquinas')">Hojas de vida de máquinas</button>
+    <button class="navitem" data-sec="personal" onclick="showSection('personal')">Personal</button>
+    <button class="navitem" data-sec="fichas" onclick="showSection('fichas')">Fichas técnicas</button>
+    <button class="navitem" data-sec="desarrollo" onclick="showSection('desarrollo')">Desarrollo de producto</button>
+    <button class="navitem" data-sec="materia" onclick="showSection('materia')">Materia prima</button>
+    <button class="navitem" data-sec="config" onclick="showSection('config')">Acerca de la demo</button>
+
+    <div class="sidebar-foot">
+      <div class="net-status" id="netStatusIndicator">
+        <div class="net-dot" id="netDot"></div>
+        <span id="netText">Sistema en línea</span>
+      </div>
+      <div>Gestión Fábrica • Planta de producción</div>
+    </div>
+  </div>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="content wide" id="mainContent">
+
+    <!-- 1. CÓMO FUNCIONA (FLUJO PASO A PASO DETALLADO) -->
+    <div class="section active" id="sec-flujo">
+      <div class="sec-title">Cómo funciona todo el sistema</div>
+      <div class="sec-sub">El flujo completo, de principio a fin: de la ficha técnica al Gantt de planeación</div>
+
+      <div class="fc">
+        <div class="fc-fase">Fase 1 · Ingeniería (una vez por referencia)</div>
+        <div class="fc-grid">
+          <div class="fc-row left">
+            <div class="fc-dot"></div>
+            <div class="fc-box">
+              <div class="fc-step">Paso 1</div>
+              <div class="fc-title">Se crea la ficha de precosteo (FT-CIR-004)</div>
+              <div class="fc-desc">Ingeniería carga, por cada referencia, la estructura de hilos (títulos, torsiones), el tiempo estándar por docena, el peso estándar y la eficiencia esperada. Esta ficha es la receta base.</div>
+              <a class="fc-tag" href="fichas.html" target="_blank" rel="noopener">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path></svg>
+                Fichas Técnicas
+              </a>
+            </div>
+          </div>
+          <div class="fc-row right">
+            <div class="fc-dot"></div>
+            <div class="fc-box">
+              <div class="fc-step">Paso 2</div>
+              <div class="fc-title">Esos datos alimentan la base de datos de Referencias</div>
+              <div class="fc-desc">La ficha sube sola a la nube y arma el catálogo central de REFS. Producción, Hilos y Planeación leen de ahí sin duplicar digitación.</div>
+              <span class="fc-tag" style="cursor:default">Catálogo de Referencias (nube)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="fc-fase">Fase 2 · Planta (todos los turnos, todos los días)</div>
+        <div class="fc-grid">
+          <div class="fc-row left">
+            <div class="fc-dot"></div>
+            <div class="fc-box">
+              <div class="fc-step">Paso 3</div>
+              <div class="fc-title">El operario monta la máquina y escanea NFC</div>
+              <div class="fc-desc">Acerca su carnet, el sticker de la máquina y el de la referencia para abrir el lote con tiempos y pesos estándar cargados de inmediato.</div>
+              <a class="fc-tag" href="produccion.html" target="_blank" rel="noopener">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="12" height="17" rx="1"></rect></svg>
+                Registrar Producción
+              </a>
+            </div>
+          </div>
+          <div class="fc-row right">
+            <div class="fc-dot"></div>
+            <div class="fc-box">
+              <div class="fc-step">Paso 4</div>
+              <div class="fc-title">Registra producción, paros y entrega de turno</div>
+              <div class="fc-desc">Unidades producidas, hora real, motivo de paros y entrega de turno. Todo queda guardado al instante en la nube y se respalda en Google Sheets.</div>
+              <span class="fc-tag" style="cursor:default">Registro en tiempo real</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="fc-down">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="4" x2="12" y2="18"></line><polyline points="6 12 12 18 18 12"></polyline></svg>
+        </div>
+        <div class="fc-merge">
+          <div class="fc-merge-t">Con ese registro, se generan dos cosas al mismo tiempo</div>
+          <div class="fc-merge-row">
+            <span class="fc-chip">Lo producido real (unidades y tiempo)</span>
+            <span class="fc-chip">vs. el estándar de la ficha</span>
+          </div>
+        </div>
+
+        <div class="fc-grid">
+          <div class="fc-row left">
+            <div class="fc-dot"></div>
+            <div class="fc-box">
+              <div class="fc-step">Paso 5a</div>
+              <div class="fc-title">Se calcula la eficiencia real</div>
+              <div class="fc-desc">Comparando lo producido contra el estándar: eficiencia por máquina, operario y turno en tiempo real.</div>
+            </div>
+          </div>
+          <div class="fc-row right">
+            <div class="fc-dot"></div>
+            <div class="fc-box">
+              <div class="fc-step">Paso 5b</div>
+              <div class="fc-title">Se calcula el consumo de hilo</div>
+              <div class="fc-desc">Según la referencia montada y su estructura de hilos: cuántos kilos de cada título se están gastando ahora mismo.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fc-grid">
+          <div class="fc-row left">
+            <div class="fc-dot"></div>
+            <div class="fc-box">
+              <div class="fc-step">Paso 6a</div>
+              <div class="fc-title">Tablero Maestro en tiempo real</div>
+              <div class="fc-desc">Las 142 máquinas en vivo: estado, operario, referencia, eficiencia y motivos de paro actualizados automáticamente.</div>
+              <a class="fc-tag" href="tablero.html" target="_blank" rel="noopener">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="20" x2="20" y2="20"></line><rect x="6" y="12" width="3" height="8"></rect><rect x="11" y="7" width="3" height="13"></rect><rect x="16" y="10" width="3" height="10"></rect></svg>
+                Tablero Maestro
+              </a>
+            </div>
+          </div>
+          <div class="fc-row right">
+            <div class="fc-dot"></div>
+            <div class="fc-box">
+              <div class="fc-step">Paso 6b</div>
+              <div class="fc-title">Pedido diario a bodega</div>
+              <div class="fc-desc">Consumo de materia prima en kilos, por título y por lote, listo para solicitarse sin cálculos manuales.</div>
+              <a class="fc-tag" href="materia.html" target="_blank" rel="noopener">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="6" rx="6" ry="3"></ellipse><path d="M6 6v12c0 1.7 2.7 3 6 3s6-1.3 6-3V6"></path></svg>
+                Hilos y Materia Prima
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="fc-fase">Fase 3 · Planeación (programa mensual)</div>
+        <div class="fc-down">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="4" x2="12" y2="18"></line><polyline points="6 12 12 18 18 12"></polyline></svg>
+        </div>
+        <div class="fc-merge">
+          <div class="fc-merge-t">Para proyectar el mes, el Gantt combina tres cosas</div>
+          <div class="fc-merge-row">
+            <span class="fc-chip">Programa mensual</span>
+            <span class="fc-chip">Tiempos estándar</span>
+            <span class="fc-chip">Estado real de máquinas</span>
+          </div>
+        </div>
+
+        <div class="fc-box fc-final">
+          <div class="fc-step">Paso 7</div>
+          <div class="fc-title">Gantt de Planeación de Producción</div>
+          <div class="fc-desc">Proyecta fechas de inicio y fin por máquina y referencia, compara el avance real contra lo planeado y muestra qué referencia sigue.</div>
+          <a class="fc-tag" href="planeacion.html" target="_blank" rel="noopener">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="1.5"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg>
+            Planeación de Producción
+          </a>
+        </div>
+      </div>
+
+      <div class="flow-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <div>Solo los pasos 3 y 4 (Registrar Producción) se necesitan en el celular de los operarios en planta. El resto está reservado para ingeniería, bodega y supervisión.</div>
+      </div>
+    </div>
+
+    <!-- 2. PRODUCCIÓN DIARIA -->
+    <div class="section" id="sec-produccion">
+      <div class="sec-title">Producción diaria</div>
+      <div class="sec-sub">Herramientas de uso diario para operarios y supervisores</div>
+      <a class="row" href="produccion.html" target="_blank" rel="noopener">
+        <div class="row-icon">📱</div>
+        <div style="flex-grow:1"><div class="row-t">Registrar Producción</div><div class="row-d">Abrir lotes, cerrar lotes, entrega de turno y paros por NFC.</div></div>
+        <span class="row-tag tag-op">Operarios</span>
+      </a>
+      <a class="row" href="tablero.html" target="_blank" rel="noopener">
+        <div class="row-icon">📊</div>
+        <div style="flex-grow:1"><div class="row-t">Tablero Maestro</div><div class="row-d">Vista en tiempo real de todos los equipos, eficiencia y motivos de paro por máquina.</div></div>
+        <span class="row-tag tag-sup">Supervisión</span>
+      </a>
+      <a class="row" href="planeacion.html" target="_blank" rel="noopener">
+        <div class="row-icon">📅</div>
+        <div style="flex-grow:1"><div class="row-t">Planeación de Producción</div><div class="row-d">Gantt proyectado: según el programa mensual, qué máquina corre cada referencia.</div></div>
+        <span class="row-tag tag-plan">Planeación</span>
+      </a>
+    </div>
+
+    <!-- PLANTA VIRTUAL -->
+    <div class="section" id="sec-planta">
+      <div class="sec-title">Planta virtual</div>
+      <div class="sec-sub">Plano de la planta en vivo, para supervisión</div>
+      <a class="row" href="planta.html" target="_blank" rel="noopener">
+        <div class="row-icon">🏭</div>
+        <div style="flex-grow:1"><div class="row-t">Abrir planta virtual</div><div class="row-d">Cada máquina por equipo con su estado, operario y referencia, con el personal en movimiento.</div></div>
+        <span class="row-tag tag-sup">Supervisión</span>
+      </a>
+    </div>
+
+    <!-- HOJAS DE VIDA DE MÁQUINAS -->
+    <div class="section" id="sec-maquinas">
+      <div class="sec-title">Hojas de vida de máquinas</div>
+      <div class="sec-sub">Historial técnico de cada máquina, para los mecánicos</div>
+      <a class="row" href="maquinas.html" target="_blank" rel="noopener">
+        <div class="row-icon">🔧</div>
+        <div style="flex-grow:1"><div class="row-t">Abrir hojas de vida de máquinas</div><div class="row-d">Mantenimientos, cambios de elementos, notas rápidas y fotos del estado de cada máquina. El mecánico toca la máquina y registra en segundos.</div></div>
+        <span class="row-tag tag-cfg">Mecánica</span>
+      </a>
+      </div>
+    </div>
+
+    <!-- PERSONAL -->
+    <div class="section" id="sec-personal">
+      <div class="sec-title">Personal</div>
+      <div class="sec-sub">Hojas de vida, turnos, novedades y cotejo de timbradas · acceso con clave</div>
+      <a class="row" href="personal.html" target="_blank" rel="noopener">
+        <div class="row-icon">👥</div>
+        <div style="flex-grow:1"><div class="row-t">Abrir módulo de personal</div><div class="row-d">Carpeta de cada colaborador: hoja de vida, horario, novedades, disciplinarias, capacitación y documentos. Importa el reporte de timbradas y liquida horas extras contra la lista de turnos.</div></div>
+        <span class="row-tag tag-rh">Con clave</span>
+      </a>
+      <div class="row" style="cursor:default;background:#fdf1de;border-color:#f3dcb6">
+        <div class="row-icon">🔒</div>
+        <div style="flex-grow:1"><div class="row-t">Datos reservados</div><div class="row-d">Pide clave al entrar. Comparte la dirección solo con quien deba ver incapacidades, documentos y datos personales.</div></div>
+      </div>
+    </div>
+
+    <!-- 4. FICHAS TÉCNICAS -->
+    <div class="section" id="sec-fichas">
+      <div class="sec-title">Fichas técnicas</div>
+      <div class="sec-sub">Ingeniería de producto y costeo</div>
+      <a class="row" href="fichas.html" target="_blank" rel="noopener">
+        <div class="row-icon">📄</div>
+        <div style="flex-grow:1"><div class="row-t">Fichas Técnicas</div><div class="row-d">Cost sheets, fichas de medidas/aprobación y matriz de enconado.</div></div>
+        <span class="row-tag tag-ref">Ingeniería</span>
+      </a>
+    </div>
+
+    <!-- 5. DESARROLLO DE PRODUCTO -->
+    <div class="section" id="sec-desarrollo">
+      <div class="sec-title">Desarrollo de producto</div>
+      <div class="sec-sub">Seguimiento de nuevos desarrollos, de la referencia a producción</div>
+      <a class="row" href="desarrollo.html" target="_blank" rel="noopener">
+        <div class="row-icon">🔬</div>
+        <div style="flex-grow:1"><div class="row-t">Tablero de Desarrollo</div><div class="row-d">Tablero Kanban para hacer seguimiento a cada desarrollo.</div></div>
+        <span class="row-tag tag-dev">Diseño</span>
+      </a>
+    </div>
+
+    <!-- 6. MATERIA PRIMA -->
+    <div class="section" id="sec-materia">
+      <div class="sec-title">Materia prima</div>
+      <div class="sec-sub">Consumo y pedido de hilo para bodega</div>
+      <a class="row" href="materia.html" target="_blank" rel="noopener">
+        <div class="row-icon">🧵</div>
+        <div style="flex-grow:1"><div class="row-t">Hilos y Materia Prima</div><div class="row-d">Cuánto hilo se necesita hoy y recibo de cajas con OCR.</div></div>
+        <span class="row-tag tag-cfg">Bodega</span>
+      </a>
+    </div>
+
+    <!-- 7. CONFIGURACIÓN -->
+    <div class="section" id="sec-config">
+      <div class="sec-title">Acerca de esta demostración</div>
+      <div class="sec-sub">Qué está viendo y qué pasa en una instalación real</div>
+      <div class="row" style="cursor:default">
+        <div class="row-icon">🧪</div>
+        <div style="flex-grow:1"><div class="row-t">Datos de ejemplo</div><div class="row-d">Esta versión corre con una planta ficticia de 20 máquinas de tejido sin costura, 14 personas y tres semanas de historia. Todo pasa dentro de su navegador: nada se guarda ni se envía a ningún servidor. Al recargar, la demostración vuelve a empezar.</div></div>
+      </div>
+      <div class="row" style="cursor:default">
+        <div class="row-icon">☁️</div>
+        <div style="flex-grow:1"><div class="row-t">En una instalación real</div><div class="row-d">Los datos viven en la nube y se sincronizan entre los celulares de planta, el tablero de supervisión y la oficina, con respaldo en hoja de cálculo y acceso por usuario.</div></div>
+      </div>
+      <div class="row" style="cursor:default">
+        <div class="row-icon">🧩</div>
+        <div style="flex-grow:1"><div class="row-t">Se adapta a cada planta</div><div class="row-d">Número de máquinas y equipos, marcas y modelos, referencias, turnos, motivos de paro y reglas de horas extras se configuran según la operación de cada fábrica.</div></div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// FUNCIONES DE CONTROL DE SECCIONES
+function showSection(name) {
+  var secs = ['flujo', 'produccion', 'planta', 'maquinas', 'personal', 'fichas', 'desarrollo', 'materia', 'config'];
+  for (var i = 0; i < secs.length; i++) {
+    var isOn = secs[i] === name;
+    var el = document.getElementById('sec-' + secs[i]);
+    if(el) el.classList.toggle('active', isOn);
+  }
+  var navs = document.querySelectorAll('.navitem');
+  for (var j = 0; j < navs.length; j++) {
+    navs[j].classList.toggle('active', navs[j].getAttribute('data-sec') === name);
+  }
+  var contentEl = document.querySelector('.content');
+  if (contentEl) contentEl.classList.toggle('wide', name === 'flujo');
+  try { location.hash = name; } catch(e) {}
+  
+}
+
+// CONTROL DE CONEXIÓN
+function updateNetworkStatus() {
+  var dot = document.getElementById('netDot');
+  var text = document.getElementById('netText');
+  if (!dot || !text) return;
+  if (navigator.onLine) {
+    dot.classList.remove('offline');
+    text.textContent = 'Sistema en línea';
+  } else {
+    dot.classList.add('offline');
+    text.textContent = 'Modo Offline (Sin Red)';
+  }
+}
+window.addEventListener('online', updateNetworkStatus);
+window.addEventListener('offline', updateNetworkStatus);
+
+(function initFromHash() {
+  updateNetworkStatus();
+  var h = (location.hash || '').replace('#', '');
+  var valid = ['flujo', 'produccion', 'planta', 'maquinas', 'personal', 'fichas', 'desarrollo', 'materia', 'config'];
+  if (valid.indexOf(h) >= 0) showSection(h);
+  else showSection('flujo');
+})();
+</script>
+
+</body>
+</html>

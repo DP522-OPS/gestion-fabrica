@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gestión Fábrica - Materia Prima (Hilos)</title>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-materia-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/icon-materia-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-materia-180.png">
+<link rel="manifest" href="manifest-materia.json">
+<meta name="theme-color" content="#92400e">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#1e3a5f;--navyl:#e8eef7;--amber:#f59e0b;--amberd:#d97706;--amberl:#fef3c7;--green:#10b981;--greenl:#ecfdf5;--red:#ef4444;--redl:#fef2f2;--steel:#64748b;--steell:#f1f5f9;--border:#e2e8f0;--purple:#8b5cf6;--purplel:#f5f3ff;--teal:#0891b2;--teall:#ecfeff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+header{background:linear-gradient(90deg,#1e3a5f,#2d5a9e);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.brand{font-size:1.2rem;font-weight:800;color:#fff}
+.brand span{font-weight:400;opacity:.6;font-size:.85rem;margin-left:.5rem}
+.btn-cfg{background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3);border-radius:8px;padding:.4rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer}
+.btn-cfg:hover{background:rgba(255,255,255,.25)}
+.setup-panel{background:#1e293b;border:2px solid var(--amber);border-radius:12px;padding:1.25rem;margin:1.25rem;max-width:560px}
+.setup-panel h2{font-size:.95rem;font-weight:700;color:var(--amber);margin-bottom:.5rem}
+.setup-panel p{font-size:.82rem;color:#94a3b8;line-height:1.55;margin-bottom:.65rem}
+.inp-row{display:flex;gap:.5rem}
+.inp-url{flex:1;padding:.58rem .85rem;background:#0f172a;border:1.5px solid #334155;border-radius:8px;font-size:.85rem;color:#e2e8f0}
+.inp-url:focus{outline:none;border-color:var(--amber)}
+.btn-conn{background:var(--amber);color:#fff;border:none;border-radius:8px;padding:.58rem 1rem;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-conn:hover{background:var(--amberd)}
+.content{padding:1.25rem;max-width:1200px;margin:0 auto}
+.tabs{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+.tab-btn{background:#1e293b;color:#94a3b8;border:1.5px solid #334155;border-radius:9px;padding:.55rem 1rem;font-size:.82rem;font-weight:700;cursor:pointer}
+.tab-btn.on{background:var(--amber);color:#1e293b;border-color:var(--amber)}
+.panel{display:none}
+.panel.on{display:block}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:1.1rem;margin-bottom:1rem}
+.card-t{font-size:.85rem;font-weight:800;color:#fff;margin-bottom:.35rem}
+.card-d{font-size:.78rem;color:#94a3b8;margin-bottom:.8rem;line-height:1.5}
+.status-line{font-size:.76rem;color:#64748b;margin-bottom:.6rem}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{text-align:left;color:#64748b;font-size:.68rem;text-transform:uppercase;letter-spacing:.4px;padding:.5rem .6rem;border-bottom:1.5px solid #334155}
+td{padding:.55rem .6rem;border-bottom:1px solid #263244}
+tr:last-child td{border-bottom:none}
+.tit{font-weight:700;color:#fff}
+.sub{font-size:.7rem;color:#64748b}
+.lote-tag{font-size:.68rem;color:#93c5fd;font-family:monospace}
+.kg{font-weight:800;color:var(--amber);text-align:right;white-space:nowrap}
+.tag{display:inline-block;font-size:.62rem;font-weight:700;padding:.1rem .4rem;border-radius:5px;margin-right:.25rem}
+.tag-s{background:#1d4ed8;color:#bfdbfe}
+.tag-z{background:#374151;color:#d1d5db}
+.total-row td{border-top:2px solid #334155;font-weight:800;color:#fff}
+.form-row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:.9rem}
+.f-group{display:flex;flex-direction:column;gap:.3rem}
+.f-group label{font-size:.7rem;color:#64748b;font-weight:700;text-transform:uppercase}
+.f-group input,.f-group select{padding:.55rem .7rem;background:#0f172a;border:1.5px solid #334155;border-radius:8px;color:#e2e8f0;font-size:.85rem;min-width:150px}
+.f-group input:focus,.f-group select:focus{outline:none;border-color:var(--amber)}
+.btn-calc{background:var(--green);color:#fff;border:none;border-radius:8px;padding:.6rem 1.1rem;font-size:.82rem;font-weight:700;cursor:pointer}
+.btn-calc:hover{background:#0d9d6f}
+.empty{font-size:.82rem;color:#64748b;font-style:italic;padding:1rem 0;text-align:center}
+.warn{font-size:.76rem;color:var(--amber);margin-bottom:.6rem;line-height:1.5}
+.refres{background:none;border:1.5px solid #334155;color:#94a3b8;border-radius:7px;padding:.35rem .7rem;font-size:.72rem;font-weight:700;cursor:pointer}
+.refres:hover{border-color:var(--amber);color:var(--amber)}
+.maq-mini{display:inline-block;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:.2rem .5rem;font-size:.7rem;margin:.15rem;color:#94a3b8}
+.maq-mini b{color:#fff}
+.rec-t{min-width:880px}
+.rec-t th{white-space:nowrap}
+.rec-t td{padding:.3rem .35rem;vertical-align:middle}
+.rec-t input[type=text],.rec-t select{width:100%;background:#0f172a;border:1.5px solid #334155;border-radius:6px;color:#e2e8f0;padding:.35rem .45rem;font-size:.8rem;min-width:62px}
+.rec-t input:focus,.rec-t select:focus{outline:none;border-color:var(--amber)}
+.rec-t td.falta input,.rec-t td.falta select{background:#5a3a07;border-color:#f59e0b;color:#fff}
+.rec-t td.falta::after{content:'';}
+.falta-ej{background:#5a3a07;border:1.5px solid #f59e0b;color:#fff;padding:0 .35rem;border-radius:5px}
+.rec-btn-x{background:none;border:none;color:#ef4444;cursor:pointer;font-size:1rem;padding:.2rem .4rem}
+.rec-ph{background:none;border:none;cursor:pointer;font-size:1rem;padding:.2rem .3rem}
+.rec-hdr .f-group input{min-width:120px}
+.rec-act{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem}
+.rec-aviso{font-size:.78rem;color:#fbbf24;margin:.4rem 0}
+.rec-ok{color:#10b981}
+
+#rec-cam-ov{display:none;position:fixed;inset:0;z-index:50;background:rgba(2,6,23,.92);align-items:center;justify-content:center;padding:1rem}
+.cam-box{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:1rem;width:100%;max-width:880px;display:flex;flex-direction:column;gap:.7rem}
+.cam-box video{width:100%;max-height:68vh;background:#000;border-radius:10px;object-fit:contain}
+.cam-row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.cam-row select{background:#0f172a;border:1.5px solid #334155;color:#e2e8f0;border-radius:8px;padding:.45rem .6rem;font-size:.8rem;max-width:260px}
+.btn-cap{background:var(--green);color:#fff;border:none;border-radius:10px;padding:.8rem 1.6rem;font-size:1rem;font-weight:800;cursor:pointer}
+.btn-cap:hover{background:#0d9d6f}
+.cam-st{font-size:.8rem;color:#94a3b8;min-height:1.2rem}
+</style>
+<script src="demo-db.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="brand">Gestión Fábrica <span>Materia Prima - Hilos</span></div>
+  <button class="btn-cfg" onclick="toggleSetup()">&#9881;&#65039; Conexion</button>
+</header>
+
+<div class="setup-panel" id="setup-div">
+  <h2>Conectar con la produccion (Google Sheets)</h2>
+  <p>Pegue la misma URL que ya usa el Tablero Maestro. Con eso esta pagina sabe que esta corriendo en cada maquina y cuanto se ha producido hoy.</p>
+  <div class="inp-row">
+    <input type="text" id="url-input" class="inp-url" placeholder="https://script.google.com/macros/s/.../exec">
+    <button class="btn-conn" onclick="conectar()">Conectar</button>
+  </div>
+  <div id="conn-status" style="font-size:.78rem;margin-top:.6rem;color:#94a3b8"></div>
+</div>
+
+<div class="content">
+
+  <div class="tabs">
+    <button class="tab-btn on" id="tab-corriendo" onclick="showTab('corriendo')">Lo que esta corriendo</button>
+    <button class="tab-btn" id="tab-consumo" onclick="showTab('consumo')">Consumo de hoy (cerrados)</button>
+    <button class="tab-btn" id="tab-pedido" onclick="showTab('pedido')">Calculadora de pedido</button>
+    <button class="tab-btn" id="tab-recibo" onclick="showTab('recibo')">&#128247; Recibo de hilo (rotulos)</button>
+  </div>
+
+  <div class="panel on" id="panel-corriendo">
+    <div class="card">
+      <div class="card-t">Hilo necesario para hoy, segun lo que esta corriendo ahora</div>
+      <div class="card-d">Toma las maquinas que estan corriendo en este momento (sin esperar a que cierren el lote), y con el tiempo estandar de cada referencia proyecta cuanto van a producir en las horas indicadas. De ahi calcula el hilo necesario por titulo y lote.</div>
+      <div class="form-row">
+        <div class="f-group">
+          <label>Horas a proyectar</label>
+          <input type="number" id="proy-horas" min="0" step="0.5">
+        </div>
+        <div class="f-group">
+          <label>Eficiencia esperada (%)</label>
+          <input type="number" id="proy-eff" min="1" max="150" value="85">
+        </div>
+        <button class="btn-calc" onclick="cargarCorriendo()">&#8635; Recalcular</button>
+      </div>
+      <div class="status-line" id="corriendo-status">Aun no se ha conectado.</div>
+      <div id="corriendo-maquinas" style="margin-bottom:.7rem"></div>
+      <div id="corriendo-body"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-t">Reportar manualmente que una maquina esta corriendo</div>
+      <div class="card-d">Para las maquinas que ya estan corriendo pero todavia no han abierto/cerrado un lote con el codigo actualizado. Se guarda de una vez en el servidor, sin pasar por la app de operarios.</div>
+      <div class="form-row">
+        <div class="f-group">
+          <label>Maquina (ID)</label>
+          <input type="text" id="rep-maq" placeholder="Ej: SAN-14">
+        </div>
+        <div class="f-group">
+          <label>Referencia</label>
+          <input type="text" id="rep-ref-q" list="ped-ref-list" placeholder="Buscar codigo o nombre...">
+        </div>
+        <button class="btn-calc" onclick="reportarManual()">Marcar como corriendo</button>
+      </div>
+      <div class="status-line" id="reportar-status"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-consumo">
+    <div class="card">
+      <div class="card-t">Hilo consumido hoy en planta (lotes cerrados)</div>
+      <div class="card-d">Suma los lotes que YA se cerraron hoy (tubos producidos por referencia) y los convierte a kilos de hilo, agrupado por titulo y lote. Esto es consumo real ya ejecutado, no proyeccion.</div>
+      <div class="status-line" id="consumo-status">Aun no se ha conectado.</div>
+      <button class="refres" onclick="cargarConsumoHoy()">&#8635; Actualizar</button>
+      <div id="consumo-body" style="margin-top:.8rem"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-pedido">
+    <div class="card">
+      <div class="card-t">Hilo necesario para un pedido</div>
+      <div class="card-d">Elija la referencia y cuantas docenas hay que producir. Calcula el hilo exacto (por titulo y lote) que se necesita, sin depender de lo que este corriendo en planta.</div>
+      <div class="form-row">
+        <div class="f-group">
+          <label>Referencia</label>
+          <input type="text" id="ped-ref-q" list="ped-ref-list" placeholder="Buscar codigo o nombre..." oninput="onPedRefInput()">
+          <datalist id="ped-ref-list"></datalist>
+        </div>
+        <div class="f-group">
+          <label>Docenas a producir</label>
+          <input type="number" id="ped-docenas" placeholder="Ej: 500" min="0">
+        </div>
+        <button class="btn-calc" onclick="calcularPedido()">Calcular hilo necesario</button>
+      </div>
+      <div id="ped-ref-info" class="sub" style="margin-bottom:.6rem"></div>
+      <div id="pedido-body"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-t">Referencias de Produccion sin hilo cargado</div>
+      <div class="card-d">La lista de Produccion (Configuracion) trae codigo, nombre, tubos por docena y minutos por docena, pero <strong>no el peso ni los hilos</strong>: eso solo sale de la ficha de precosteo. Esta tabla muestra que le falta a cada referencia para entrar a la calculadora.</div>
+      <div class="status-line" id="cob-status"></div>
+      <div class="form-row">
+        <div class="f-group"><label>Buscar</label><input type="text" id="cob-q" placeholder="Codigo o nombre..." oninput="renderCobertura()"></div>
+        <button class="refres" onclick="cobDescargar()">Descargar lista completa (CSV)</button>
+      </div>
+      <div id="cob-body"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-recibo">
+    <div class="card">
+      <div class="card-t">Recibo de hilo: foto del rotulo a la planilla F10-P-PRH-004</div>
+      <div class="card-d">Tome una foto de cada rotulo (una caja por foto, de frente y con buena luz). La app lee los datos, busca el item por lote y torsion (con el catalogo de las fichas de precosteo) y arma la fila de la planilla. Lo que no se pueda leer o no cuadre queda en <span class="falta-ej">amarillo</span> para completarlo a mano antes de pasarlo a IBM.</div>
+      <div class="form-row">
+        <button class="btn-calc" onclick="recAbrirCamara()">&#128247; Camara en vivo</button>
+        <button class="refres" onclick="document.getElementById('rec-gal').click()">Elegir de galeria (varias)</button>
+        <button class="refres" id="rec-btn-nat" style="display:none" onclick="document.getElementById('rec-cam').click()">Camara del celular (app)</button>
+        <button class="refres" onclick="recAddManual()">+ Fila manual</button>
+        <button class="refres" onclick="recProbarQwen()">Probar conexion con Qwen</button>
+        <input type="file" id="rec-cam" accept="image/*" capture="environment" style="display:none" onchange="recFiles(this)">
+        <input type="file" id="rec-gal" accept="image/*" multiple style="display:none" onchange="recFiles(this)">
+      </div>
+      <div class="status-line" id="rec-status"></div>
+      <div class="form-row rec-hdr">
+        <div class="f-group"><label>Fecha de recibo</label><input type="date" id="rec-fecha" onchange="recCambiarFecha(this.value)"></div>
+        <div class="f-group"><label>Tipo de movimiento</label><input type="text" id="rec-h-mov" placeholder="Ej: Entrada" onchange="recHdrSave()"></div>
+        <div class="f-group"><label>Origen</label><input type="text" id="rec-h-ori" onchange="recHdrSave()"></div>
+        <div class="f-group"><label>Destino</label><input type="text" id="rec-h-des" onchange="recHdrSave()"></div>
+        <div class="f-group"><label>Numero</label><input type="text" id="rec-h-num" onchange="recHdrSave()"></div>
+      </div>
+      <datalist id="cat-items"></datalist>
+      <div id="rec-aviso" class="rec-aviso"></div>
+      <div id="rec-body"></div>
+      <div id="rec-resumen" style="margin-top:1rem"></div>
+      <div class="rec-act">
+        <button class="btn-calc" onclick="recDescargarExcel()">Descargar Excel</button>
+        <button class="refres" onclick="recCopiar()">Copiar filas (para pegar)</button>
+        <button class="refres" onclick="recImprimir()">Imprimir planilla</button>
+        <button class="refres" onclick="recMarcarTodas()">Marcar todas como pasadas a IBM</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-t">Fichas tecnicas cargadas</div>
+    <div class="status-line" id="fichas-status">Cargando desde Fichas...</div>
+  </div>
+
+</div>
+
+<div id="rec-cam-ov">
+  <div class="cam-box">
+    <div class="card-t" style="margin:0">Camara en vivo: encuadre el rotulo y pulse Capturar</div>
+    <video id="rec-video" playsinline autoplay muted></video>
+    <div class="cam-row">
+      <button class="btn-cap" onclick="recCapturar()">&#128248; Capturar (barra espaciadora)</button>
+      <select id="rec-cam-sel" onchange="recIniciarCamara(this.value)" style="display:none"></select>
+      <button class="refres" onclick="recCerrarCamara()">Cerrar</button>
+      <span class="sub" id="rec-cam-n"></span>
+    </div>
+    <div class="cam-st" id="rec-cam-st"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Conexion a Google Sheets (produccion) - reutiliza la misma URL
+// que ya se configura en el Tablero Maestro (dashboard.html)
+// ============================================================
+// Quita comillas sueltas al inicio/final que a veces quedan pegadas a la URL
+// (por ejemplo al copiarla desde el inspector del navegador, que muestra los
+// textos entre comillas) y causaban el error "<!DOCTYPE... is not valid JSON".
+function limpiarGasUrl(v) {
+  v = (v || '').trim();
+  while (v.length > 1 && (v.charAt(0) === '"' || v.charAt(0) === "'")) v = v.slice(1);
+  while (v.length > 1 && (v.charAt(v.length - 1) === '"' || v.charAt(v.length - 1) === "'")) v = v.slice(0, -1);
+  return v.trim();
+}
+
+var GAS_URL = 'demo-gas';
+try { GAS_URL = localStorage.getItem('gf_gas_url') || localStorage.getItem('gf_dash_url') || ''; } catch(e) { GAS_URL = ''; }
+GAS_URL = limpiarGasUrl(GAS_URL);
+if (GAS_URL) {
+  document.getElementById('url-input').value = GAS_URL;
+  document.getElementById('setup-div').style.display = 'none';
+  try { localStorage.setItem('gf_gas_url', GAS_URL); } catch(e){}
+} else {
+  setTimeout(cargarGasUrlDeLaNube, 0); // espera a que el resto del script (FICHAS_FB_CFG) termine de definirse
+}
+
+function toggleSetup() {
+  var d = document.getElementById('setup-div');
+  d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
+
+function conectar() {
+  var url = limpiarGasUrl(document.getElementById('url-input').value || '');
+  if (!url) { document.getElementById('conn-status').textContent = 'Ingrese la URL'; return; }
+  document.getElementById('conn-status').textContent = 'Conectando...';
+  GAS_URL = url;
+  document.getElementById('url-input').value = url;
+  try { localStorage.setItem('gf_gas_url', url); } catch(e){}
+  fetch(url + '?action=leer_estado')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.estados !== undefined) {
+        document.getElementById('conn-status').textContent = 'Conectado. La hoja EnCurso responde bien (' + d.estados.length + ' maquinas registradas).';
+        document.getElementById('conn-status').style.color = '#10b981';
+      } else {
+        document.getElementById('conn-status').textContent = 'Conectado, pero el Apps Script todavia no reconoce "EnCurso". Actualice el codigo (ver guia_google_sheets.html paso 3) y redespliegue como Nueva version.';
+        document.getElementById('conn-status').style.color = '#f59e0b';
+      }
+      document.getElementById('setup-div').style.display = 'none';
+      cargarCorriendo();
+      cargarConsumoHoy();
+    })
+    .catch(function(e) {
+      document.getElementById('conn-status').textContent = 'Error: ' + e.message;
+      document.getElementById('conn-status').style.color = '#ef4444';
+    });
+}
+
+function hoy() {
+  try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
+  catch (e) { var n = new Date(Date.now() - 5 * 3600000); return n.toISOString().split('T')[0]; }
+}
+function parseFecha(v) {
+  if (!v) return '';
+  if (typeof v === 'string' && v.indexOf('T') >= 0) return v.split('T')[0];
+  try { var d = new Date(v); if (!isNaN(d.getTime())) return d.toISOString().split('T')[0]; } catch(e){}
+  return String(v);
+}
+// Horas restantes del dia de hoy (redondeado a .5), para precargar el campo
+// "Horas a proyectar". La planta trabaja 24/7 asi que por defecto se
+// proyecta lo que falta hasta medianoche.
+function horasRestantesHoy() {
+  var n = new Date();
+  var rest = 24 - (n.getHours() + n.getMinutes()/60);
+  return Math.max(1, Math.round(rest*2)/2);
+}
+document.getElementById('proy-horas').value = horasRestantesHoy();
+
+// ============================================================
+// Fichas (Firestore) - misma fuente que index.html usa para REFS
+// ============================================================
+var FICHAS_FB_CFG = {projectId:'demo'};
+var _fichasDb = null;
+// code -> { nombre, tubosPorDocena, pesoTuboG, tiempoPorTuboMin, fibras:[{nombre,titulo,lote,porcentaje,itemS,itemZ}] }
+var MATERIALES = {};
+// Catalogo de referencias de Produccion (Config. de index.html, al 7-oct-2026):
+// [codigo, nombre, tipo(s=santoni,l=lonati,o=otro), tubosPorDocena, minutosPorDocena].
+// OJO: ese catalogo NO trae peso ni composicion de hilo; eso solo vive en cada
+// ficha de precosteo (Firestore). Aqui se usa para saber cuales faltan.
+var REFS_PROD = [["M30767","TOBILLERA DYNAMIC","l",24,41.8],["M26952","CAMISILLA CONTROL HOMBRE","s",12,163.2],["M26953","CAMISILLA CONTROL HOMBRE","s",12,163.2],["M26954","CAMISILLA CONTROL HOMBRE","s",12,163.2],["M26955","CAMISILLA CONTROL HOMBRE","s",12,163.2],["M61982","TANGA POLIESTER","s",3,61.0],["M61983","TANGA POLIESTER","s",3,61.0],["M61984","TANGA POLIESTER","s",3,61.0],["M65562","TANGA POLIESTER","s",3,61.0],["M65563","TANGA POLIESTER","s",3,61.0],["M65564","TANGA POLIESTER","s",3,61.0],["M81754","BRA SHOCK PROFF","s",12,57.84],["M81755","BRA SHOCK PROFF","s",12,57.84],["M81756","BRA SHOCK PROFF","s",12,57.84],["M83504","BRASSIER OLIMPIA","s",12,63.9],["M83505","BRASSIER OLIMPIA","s",12,63.9],["M83506","BRASSIER OLIMPIA","s",12,63.9],["M83513","BRASS.LETICIA INVISIBLE","s",12,61.2],["M83514","BRASS.LETICIA INVISIBLE","s",12,61.2],["M83515","BRASS.LETICIA INVISIBLE","s",12,61.2],["M83524","TOP BRASS.LETICIA INVISI","s",12,88.4],["M83525","TOP BRASS.LETICIA INVISI","s",12,88.4],["M83526","TOP BRASS.LETICIA INVISI","s",12,88.4],["M83783","BRALETTE BELLISIMA","s",12,41.19],["M83784","BRALETTE BELLISIMA","s",12,41.19],["M83785","BRALETTE BELLISIMA","s",12,41.19],["M14472","MP TALL OPAQUE SUPORT 3D","l",24,66.24],["M14473","MP TALL OPAQUE SUPORT 3D","l",24,66.24],["M14474","MP TALL OPAQUE SUPORT 3D","l",24,66.24],["M14475","MP TALL OPAQUE SUPORT 3D","l",24,66.24],["M14477","MP TALL OPAQUE SUPORT 3D","l",24,66.24],["M14478","MP TALL OPAQUE SUPORT 3D","l",24,66.24],["M15162","MP. USO DIARIO TALL","l",24,57.84],["M15163","MP. USO DIARIO TALL","l",24,57.84],["M15164","MP. USO DIARIO TALL","l",24,57.84],["M15165","MP. USO DIARIO TALL","l",24,57.84],["M16572","MP. TALL OPAQUE JUNIOR","l",24,67.2],["M16573","MP. TALL OPAQUE JUNIOR","l",24,67.2],["M16574","MP. TALL OPAQUE JUNIOR","l",24,67.2],["M18473","M.P ESCOLAR","l",24,89.52],["M18474","M.P ESCOLAR","l",24,89.52],["M18475","M.P ESCOLAR","l",24,89.52],["M18476","M.P ESCOLAR","l",24,89.52],["M18477","M.P ESCOLAR","l",24,89.52],["M18478","M.P ESCOLAR","l",24,89.52],["M21967","CAMISETA LOLA","s",12,56.2],["M21968","CAMISETA LOLA","s",12,56.2],["M26513","CAMIS.CONTROL LIGHT PLUS","s",12,75.0],["M26514","CAMIS.CONTROL LIGHT PLUS","s",12,75.0],["M26515","CAMIS.CONTROL LIGHT PLUS","s",12,75.0],["M30772","SHORT BASIC SPORT","s",12,53.7],["M30773","SHORT BASIC SPORT","s",12,53.7],["M30774","SHORT BASIC SPORT","s",12,53.7],["M30842","TOP BASIC SOPOR.LIVIANO","s",12,77.0],["M30843","TOP BASIC SOPOR.LIVIANO","s",12,77.0],["M30844","TOP BASIC SOPOR.LIVIANO","s",12,77.0],["M73347","LIGUERO SUPPORT TALL","l",24,47.04],["M73348","LIGUERO SUPPORT TALL","l",24,47.04],["M83652","FULL SUPP BRA CUR3100","s",12,62.2],["M83653","FULL SUPP BRA CUR3100","s",12,62.2],["M83654","FULL SUPP BRA CUR3100","s",12,62.2],["M83655","FULL SUPP BRA CUR3100","s",12,62.2],["M83666","FULL SUPP BRA CUR3100","s",12,62.2],["M65262","BOXER BASICO UNICOLOR","s",12,45.4],["M65263","BOXER BASICO UNICOLOR","s",12,45.4],["M65264","BOXER BASICO UNICOLOR","s",12,45.4],["M65265","BOXER BASICO UNICOLOR","s",12,45.4],["M65272","BOXER BASICO RAYAS ENZO","s",12,45.4],["M65273","BOXER BASICO RAYAS ENZO","s",12,45.4],["M65274","BOXER BASICO RAYAS ENZO","s",12,45.4],["M65275","BOXER BASICO RAYAS ENZO","s",12,45.4],["M28082","BODY SHORT EVOLUTION","s",12,98.2],["M28083","BODY SHORT EVOLUTION","s",12,98.2],["M28084","BODY SHORT EVOLUTION","s",12,98.2],["M28085","BODY SHORT EVOLUTION","s",12,98.2],["M31572","MP ESTAMPADA NENAS","l",24,46.8],["M31573","MP ESTAMPADA NENAS","l",24,46.8],["M31574","MP ESTAMPADA NENAS","l",24,46.8],["M65222","HIPSTER BASIC","s",6,61.6],["M65223","HIPSTER BASIC","s",6,61.6],["M65224","HIPSTER BASIC","s",6,61.6],["M65232","TANGA BRASILERA BASIC","s",6,52.0],["M65233","TANGA BRASILERA BASIC","s",6,52.0],["M65234","TANGA BRASILERA BASIC","s",6,52.0],["M51622","PANTALON DOTACION","s",12,62.0],["M51623","PANTALON DOTACION","s",12,62.0],["M31522","M.P. BALLERINA","l",24,43.2],["M31523","M.P. BALLERINA","l",24,43.2],["M31524","M.P. BALLERINA","l",24,43.2],["M31525","M.P. BALLERINA","l",24,43.2],["M31526","M.P. BALLERINA","l",24,43.2],["M31527","M.P. BALLERINA","l",24,43.2],["M31528","M.P. BALLERINA","l",24,43.2],["M83793","BRASSIER PUSH UP BASIC","s",12,114.0],["M83794","BRASSIER PUSH UP BASIC","s",12,114.0],["M83795","BRASSIER PUSH UP BASIC","s",12,114.0],["M","VESTIDO CURVEEZ","s",12,102.0],["M31012","EUROSKINS CHILD SHIMMER","l",24,37.2],["M31013","EUROSKINS CHILD SHIMMER","l",24,37.2],["M31014","EUROSKINS CHILD SHIMMER","l",24,37.2],["M11393","M.P. TALL PANTY UP","l",24,44.2],["M11394","M.P. TALL PANTY UP","l",24,44.2],["M11395","M.P. TALL PANTY UP","l",24,44.2],["M13647","CALZON TALL PESCADOR","l",24,40.0],["M13648","CALZON TALL PESCADOR","l",24,40.0],["M28057","TOBILLERO CARIOCA","l",24,40.4],["M28058","TOBILLERO CARIOCA","l",24,40.4],["M31037","EUROSKINS ADULT MESH BAC","l",24,44.6],["M31038","EUROSKINS ADULT MESH BAC","l",24,44.6],["M33752","PANTALÓN DEPORTIVO ZEBRA","s",12,93.8],["M33753","PANTALÓN DEPORTIVO ZEBRA","s",12,93.8],["M33754","PANTALÓN DEPORTIVO ZEBRA","s",12,93.8],["M65212","TANGA BELLISIMA","s",6,48.2],["M65213","TANGA BELLISIMA","s",6,48.2],["M65214","TANGA BELLISIMA","s",6,48.2],["M83773","BRASSIER BELLISIMA","s",12,56.2],["M83774","BRASSIER BELLISIMA","s",12,56.2],["M83775","BRASSIER BELLISIMA","s",12,56.2],["M33546","SK ROMBOS","l",24,23.6],["M35596","SK TALL FRESCA DEDOS","l",24,24.4],["M63977","BOXER FULL SUPPORT UNICO","s",12,53.0],["M63978","BOXER FULL SUPPORT UNICO","s",12,53.0],["M63975","BOXER FULL SUPPORT UNICO","s",12,53.0],["M63987","BOXER FULL SUPPORT JASPE","s",12,53.0],["M63988","BOXER FULL SUPPORT JASPE","s",12,53.0],["M63985","BOXER FULL SUPPORT JASPE","s",12,53.0],["M64793","PANTY CURVY","s",12,66.2],["M64794","PANTY CURVY","s",12,66.2],["M64795","PANTY CURVY","s",12,66.2],["M64933","BICICLETERO LETICIA INV.","s",12,54.4],["M64934","BICICLETERO LETICIA INV.","s",12,54.4],["M64935","BICICLETERO LETICIA INV.","s",12,54.4],["M83373","BRASSIER CURVY DOBLE FAZ","s",12,115.8],["M83374","BRASSIER CURVY DOBLE FAZ","s",12,115.8],["M83375","BRASSIER CURVY DOBLE FAZ","s",12,115.8],["M05657","PANTY FAJA CONTROL","s",12,120.6],["M05658","PANTY FAJA CONTROL","s",12,120.6],["M29697","BODY CONTROL PLUS","s",12,172.0],["M29698","BODY CONTROL PLUS","s",12,172.0],["M30662","LEGGINS ESENCIAL","s",12,159.0],["M30663","LEGGINS ESENCIAL","s",12,159.0],["M30664","LEGGINS ESENCIAL","s",12,159.0],["M65062","PANTY BASICO ESTAM.NENAS","s",6,42.4],["M65063","PANTY BASICO ESTAM.NENAS","s",6,42.4],["M65064","PANTY BASICO ESTAM.NENAS","s",6,42.4],["M65072","PANTY BAS UNICOLOR NENAS","s",6,42.4],["M65073","PANTY BAS UNICOLOR NENAS","s",6,42.4],["M65074","PANTY BAS UNICOLOR NENAS","s",6,42.4],["M65257","PANTY SKIN","s",6,62.2],["M65258","PANTY SKIN","s",6,62.2],["M82007","FULL SUPPORT BRA UNICOLO","s",12,68.4],["M82008","FULL SUPPORT BRA UNICOLO","s",12,68.4],["M82005","FULL SUPPORT BRA UNICOLO","s",12,68.4],["M82017","FULL SUPPORT BRA JASPE","s",12,68.4],["M82018","FULL SUPPORT BRA JASPE","s",12,68.4],["M82015","FULL SUPPORT BRA JASPE","s",12,68.4],["M82502","CAMISETA POLO RENZO","s",12,91.4],["M82503","CAMISETA POLO RENZO","s",12,91.4],["M82504","CAMISETA POLO RENZO","s",12,91.4],["M82505","CAMISETA POLO RENZO","s",12,91.4],["M83867","CROP TOP EVA","s",12,47.8],["M83868","CROP TOP EVA","s",12,47.8],["M83877","CROP TOP KARINA","s",12,166.6],["M83878","CROP TOP KARINA","s",12,166.6],["M30737","TOBILLERA ESPIGA","l",24,14.4],["M30738","TOBILLERA ESPIGA","l",24,14.4],["M30747","TOBILLERA BOHEMIA","l",24,14.4],["M30748","TOBILLERA BOHEMIA","l",24,14.4],["M30812","TOP BASIC S.MEDIO UNICOL","s",12,86.0],["M30813","TOP BASIC S.MEDIO UNICOL","s",12,86.0],["M30814","TOP BASIC S.MEDIO UNICOL","s",12,86.0],["M30822","TOP DOBLEFAZ MEDIO ESTAM","s",12,86.0],["M30823","TOP DOBLEFAZ MEDIO ESTAM","s",12,86.0],["M30824","TOP DOBLEFAZ MEDIO ESTAM","s",12,86.0],["M32197","TOBILLERA ETNICA","l",24,29.8],["M32198","TOBILLERA ETNICA","l",24,29.8],["M33532","MP ROMBOS","l",24,45.0],["M33533","MP ROMBOS","l",24,45.0],["M33534","MP ROMBOS","l",24,45.0],["M33556","TOBI ROMBOS","l",24,17.0],["M83622","TOP BASICO NENAS ESTAMPA","s",6,38.8],["M83623","TOP BASICO NENAS ESTAMPA","s",6,38.8],["M83624","TOP BASICO NENAS ESTAMPA","s",6,38.8],["M83632","TOP BASICO NENAS UNICOLOR","s",6,38.8],["M83633","TOP BASICO NENAS UNICOLOR","s",6,38.8],["M83634","TOP BASICO NENAS UNICOLOR","s",6,38.8],["M83732","CAM BASICO NENAS UNICOLOR","s",12,40.4],["M83733","CAM BASICO NENAS UNICOLOR","s",12,40.4],["M83734","CAM BASICO NENAS UNICOLOR","s",12,40.4],["M33762","TOP DEPORTIVO ZEBRA","s",12,91.8],["M33763","TOP DEPORTIVO ZEBRA","s",12,91.8],["M33764","TOP DEPORTIVO ZEBRA","s",12,91.8],["M30768","TOBILLERA DYNAMIC","l",24,41.8],["M64832","PANTY SIMONE","s",6,60.8],["M64833","PANTY SIMONE","s",6,60.8],["M64834","PANTY SIMONE","s",6,60.8],["M64902","PANTY LETICIA INVISIBLE","s",6,56.2],["M64903","PANTY LETICIA INVISIBLE","s",6,56.2],["M64904","PANTY LETICIA INVISIBLE","s",6,56.2],["M81633","BRASSIER LUNA","s",12,100.0],["M81634","BRASSIER LUNA","s",12,100.0],["M81635","BRASSIER LUNA","s",12,100.0],["M81942","TOP STRAPPLE TIRA","s",12,60.0],["M81943","TOP STRAPPLE TIRA","s",12,62.2],["M81944","TOP STRAPPLE TIRA","s",12,64.4],["M83432","TOP BRA SIMONE","s",12,86.0],["M83433","TOP BRA SIMONE","s",12,86.0],["M83434","TOP BRA SIMONE","s",12,86.0],["M20717","BODY INVISIBLE TANGA","s",12,151.0],["M20718","BODY INVISIBLE TANGA","s",12,151.0],["M20727","BODY INVISIBLE PANTY","s",12,149.2],["M20728","BODY INVISIBLE PANTY","s",12,149.2],["M20737","BODY BUSTO LIBRE INV.TAN","s",12,151.0],["M20738","BODY BUSTO LIBRE INV.TAN","s",12,151.0],["M26082","BODY EVOLUTION","s",12,144.6],["M26083","BODY EVOLUTION","s",12,144.6],["M26084","BODY EVOLUTION","s",12,144.6],["M26085","BODY EVOLUTION","s",12,144.6],["M26097","BODY SHORT EVOLUTION","s",12,101.2],["M26098","BODY SHORT EVOLUTION","s",12,109.2],["M27482","BODY CACHETERO COPA","s",12,198.8],["M27483","BODY CACHETERO COPA","s",12,198.8],["M27484","BODY CACHETERO COPA","s",12,198.8],["M27485","BODY CACHETERO COPA","s",12,198.8],["M31062","MP. CASHEMIRE NENAS","l",24,30.6],["M31063","MP. CASHEMIRE NENAS","l",24,30.6],["M31065","MP. CASHEMIRE NENAS","l",24,30.6],["M31066","MP. CASHEMIRE NENAS","l",24,30.6],["M31064","MP. CASHEMIRE NENAS","l",24,30.6],["M28067","BODY SHORT EVOLUTION","s",12,101.2],["M28068","BODY SHORT EVOLUTION","s",12,109.2],["M59422","BOXER BENEFICIO","s",12,117.2],["M59423","BOXER BENEFICIO","s",12,117.2],["M59424","BOXER BENEFICIO","s",12,117.2],["M81914","SEXY CONFORT BRA","s",12,103.0],["M81915","SEXY CONFORT BRA","s",12,103.0],["M81916","SEXY CONFORT BRA","s",12,103.0],["M08197","CAMISETA SARA","s",12,64.4],["M08198","CAMISETA SARA","s",12,64.4],["M13633","M.P. SUPER DESCANSO SUPP","l",24,33.6],["M13634","M.P. SUPER DESCANSO SUPP","l",24,33.6],["M13635","M.P. SUPER DESCANSO SUPP","l",24,33.6],["M13636","M.P. SUPER DESCANSO SUPP","l",24,33.6],["M14963","M.P. DESCANSO 70","l",24,38.4],["M14964","M.P. DESCANSO 70","l",24,38.4],["M14965","M.P. DESCANSO 70","l",24,38.4],["M14966","M.P. DESCANSO 70","l",24,38.4],["M15862","MP OPAQUE NENAS","l",24,46.8],["M15863","MP OPAQUE NENAS","l",24,46.8],["M15864","MP OPAQUE NENAS","l",24,46.8],["M15865","MP OPAQUE NENAS","l",24,46.8],["M15866","MP OPAQUE NENAS","l",24,46.8],["M15861","MP OPAQUE NENAS","l",24,46.8],["M23807","CAMISETA BASICA 34","s",12,179.2],["M23808","CAMISETA BASICA 34","s",12,179.2],["M26092","TALLE EVOLUTION","s",12,135.4],["M26093","TALLE EVOLUTION","s",12,135.4],["M26094","TALLE EVOLUTION","s",12,135.4],["M26095","TALLE EVOLUTION","s",12,135.4],["M31677","BALETA SECRETA","l",24,33.4],["M31678","BALETA SECRETA","l",24,33.4],["M31697","BALETA TOTALMENTE INVIS.","l",24,30.6],["M31698","BALETA TOTALMENTE INVIS.","l",24,30.6],["M31716","ZAPATILLA ANTIDESLIZANTE","l",24,37.0],["M31726","SUECA HUELLAS","l",24,8.6],["M33527","TALLE PESCADOR MARA","s",12,88.0],["M33528","TALLE PESCADOR MARA","s",12,88.0],["M33562","MP PUNTOS","l",24,40.0],["M33563","MP PUNTOS","l",24,40.0],["M33564","MP PUNTOS","l",24,40.0],["M37456","CALCETA TALL INDONESIA","l",24,18.4],["M37466","CALCETA TALL SINGAPUR","l",24,15.8],["M37486","CALCETA TALL FILIPINA","l",24,18.4],["M36346","M.SK. TALL DESCANSO","l",24,18.8],["M37506","SK INVISIBLE TALL","l",24,16.8],["M37857","CALCETA PARA BALETA TALL","l",24,62.2],["M37858","CALCETA PARA BALETA TALL","l",24,62.2],["M38187","CALCETA RELAJANTE MUJER","l",24,41.8],["M38188","CALCETA RELAJANTE MUJER","l",24,41.8],["M38756","CALCETA HOMBRE UNICOLOR","l",24,58.4],["M38786","CALCETIN INVISIB. HOMBRE","l",24,37.6],["M39436","TOBILLERA TALL 3 D","l",24,19.0],["M39856","TOBILLERA POLKA TALL","l",24,18.0],["M39866","TOBILLERA SEDUCCION","l",24,18.0],["M39926","TOBILLERA INVISIBLE","l",24,13.6],["M59697","BOXER TALLE SILICON.TALL","s",12,167.0],["M59698","BOXER TALLE SILICON.TALL","s",12,167.0],["M71016","BOTA 3D","l",24,24.0],["M73612","LIGUERO STAY UP","l",24,14.4],["M73613","LIGUERO STAY UP","l",24,14.4],["M73614","LIGUERO STAY UP","l",24,14.4],["M73615","LIGUERO STAY UP","l",24,14.4],["M83817","CAMISETA SEDUCCION","s",12,109.0],["M83818","CAMISETA SEDUCCION","s",12,109.0],["M83834","BRASSIER SKIN","s",12,73.4],["M83835","BRASSIER SKIN","s",12,73.4],["M83836","BRASSIER SKIN","s",12,73.4],["M82672","CAMISETA BASICA MANGA SISA","s",12,49.0],["M82673","CAMISETA BASICA MANGA SISA","s",12,49.0],["M82674","CAMISETA BASICA MANGA SISA","s",12,49.0],["M82675","CAMISETA BASICA MANGA SISA","s",12,49.0],["M82592","CAMISETA POLO HARRY","s",12,78.8],["M82593","CAMISETA POLO HARRY","s",12,78.8],["M82594","CAMISETA POLO HARRY","s",12,78.8],["M51624","PANTALON DOTACION","s",12,62.0],["M51625","PANTALON DOTACION","s",12,62.0],["M14962","M.P. DESCANSO 70","l",24,38.4],["M31002","EUROSKINS ADULT SHIMMER","l",24,56.4],["M31003","EUROSKINS ADULT SHIMMER","l",24,56.4],["M31004","EUROSKINS ADULT SHIMMER","l",24,56.4],["M31005","EUROSKINS ADULT SHIMMER","l",24,56.4],["M31505","EUROSKINS ADULT SHIMMER","l",24,55.2],["M31506","EUROSKINS ADULT SHIMMER","l",24,55.2],["M31507","EUROSKINS ADULT SHIMMER","l",24,55.2],["M31508","EUROSKINS ADULT SHIMMER","l",24,55.2],["M23397","CAMISETA BETINA","s",12,117.6],["M23398","CAMISETA BETINA","s",12,117.6],["M34747","BALETA SECRETA EST X 2","l",24,33.4],["M34748","BALETA SECRETA EST X 2","l",24,33.4],["M34757","BALETA SECRETA EST X 2","l",24,33.4],["M34758","BALETA SECRETA EST X 2","l",24,33.4],["M60762","BOXER UNICOLOR","s",12,77.2],["M60763","BOXER UNICOLOR","s",12,77.2],["M60764","BOXER UNICOLOR","s",12,77.2],["M61972","BOXER POLIESTER","s",12,77.2],["M61973","BOXER POLIESTER","s",12,77.2],["M61974","BOXER POLIESTER","s",12,77.2],["M65572","BOXER POLIESTER","s",12,77.2],["M65573","BOXER POLIESTER","s",12,77.2],["M65574","BOXER POLIESTER","s",12,77.2],["M64827","BOXER SIMONE","s",12,82.2],["M64828","BOXER SIMONE","s",12,82.2],["M65032","BOXER TUCAN","s",12,71.4],["M65033","BOXER TUCAN","s",12,71.4],["M65034","BOXER TUCAN","s",12,71.4],["M65202","BOXER BELLISIMA","s",12,67.0],["M65203","BOXER BELLISIMA","s",12,67.0],["M65204","BOXER BELLISIMA","s",12,67.0],["M29987","LEGGINS RELAX","s",12,91.8],["M29988","LEGGINS RELAX","s",12,91.8],["M30802","TOP DOBLEFAZ ALTO","s",12,84.4],["M30803","TOP DOBLEFAZ ALTO","s",12,84.4],["M30804","TOP DOBLEFAZ ALTO","s",12,84.4],["M61387","CALZON CARIOCA","l",24,37.0],["M61388","CALZON CARIOCA","l",24,37.0],["M71026","BOTIN 3D","l",24,17.6],["M19213","PANTIMEDIA NUDE","l",12,42.0],["M19214","PANTIMEDIA NUDE","l",12,42.0],["M35082","CAMISETA TERMICA ML","s",12,136.4],["M35083","CAMISETA TERMICA ML","s",12,136.4],["M54486","MANGAS CAMISETA TERMICAL ML","l",24,16.4],["M30997","BODY PANTY BUSTO LIBRE","s",12,215.8],["M30998","BODY PANTY BUSTO LIBRE","s",12,215.8],["M30917","CAMISETA BUSTO LIBRE PLUS","s",12,149.8],["M30918","CAMISETA BUSTO LIBRE PLUS","s",12,149.8],["M30927","LEGGINGS CARIOCA, COMPRESION ALTA","l",24,40.4],["M30928","LEGGINGS CARIOCA, COMPRESION ALTA","l",24,40.4],["M30937","CALZÓN CARIOCA, CORTE LARGO","l",24,37.0],["M30938","CALZÓN CARIOCA, CORTE LARGO","l",24,37.0],["M18623","CALZÓN CARIOCA, CORTE LARGO","l",24,47.8],["M18622","M.P. PANTY UP","l",24,47.8],["M18624","M.P. PANTY UP","l",24,47.8],["M18625","M.P. PANTY UP","l",24,47.8],["M55026","MANGAS CAMISETA TERMICAL ML","l",24,16.4],["M57577","PANTIMEDIA NUDE","l",12,42.0],["M57578","PANTIMEDIA NUDE","l",12,42.0],["M63212","PANTY LUNA","s",6,76.4],["M63213","PANTY LUNA","s",6,76.4],["M63214","PANTY LUNA","s",6,76.4],["M14422","M.P. TALL INVISIBLE","l",24,29.2],["M14423","M.P. TALL INVISIBLE","l",24,29.2],["M14424","M.P. TALL INVISIBLE","l",24,29.2],["M14425","M.P. TALL INVISIBLE","l",24,29.2],["M18243","MP. PANTY UP TALLE","l",24,58.8],["M18244","MP. PANTY UP TALLE","l",24,58.8],["M18245","MP. PANTY UP TALLE","l",24,58.8],["M18692","M.P. ACTIVA SUPPORT","l",24,45.4],["M18693","M.P. ACTIVA SUPPORT","l",24,45.4],["M18694","M.P. ACTIVA SUPPORT","l",24,45.4],["M18695","M.P. ACTIVA SUPPORT","l",24,45.4],["M18742","M.P. CASHEMIRE LISSE","l",24,32.0],["M18743","M.P. CASHEMIRE LISSE","l",24,32.0],["M18744","M.P. CASHEMIRE LISSE","l",24,32.0],["M20767","CAMI. CTRL INVISIBLE TIR","s",12,132.6],["M20768","CAMI. CTRL INVISIBLE TIR","s",12,132.6],["M27362","PANTALON BASICO SPORT","s",12,91.8],["M27363","PANTALON BASICO SPORT","s",12,91.8],["M27364","PANTALON BASICO SPORT","s",12,91.8],["M27432","BICICLETERO BASICO SPORT","s",12,44.8],["M27433","BICICLETERO BASICO SPORT","s",12,44.8],["M27434","BICICLETERO BASICO SPORT","s",12,44.8],["M29687","CAMIS.BUSTO LIBRE PLUS","s",12,149.8],["M29688","CAMIS.BUSTO LIBRE PLUS","s",12,149.8],["M32206","CALCETIN TENNIS HOMBRE","l",24,35.6],["M38416","SLACK ACTIVA SUPPORT","l",24,23.2],["M29613","STYLE CONTROL","s",12,62.19],["M29614","STYLE CONTROL","s",12,77.6],["M29615","STYLE CONTROL","s",12,77.6],["M33647","TOBILLERA TERMICA","l",24,42.2],["M33648","TOBILLERA TERMICA","l",24,42.2],["M33702","MP ESTRELLAS","l",24,61.4],["M33703","MP ESTRELLAS","l",24,61.4],["M33704","MP ESTRELLAS","l",24,61.4],["M33696","TOBILLERA ESCOSES","l",24,27.0],["M33682","MP ESCOSES","l",24,64.4],["M33683","MP ESCOSES","l",24,64.4],["M33684","MP ESCOSES","l",24,64.4],["M23652","LEGGINS NENAS ESTAMPADO","s",12,140.0],["M23653","LEGGINS NENAS ESTAMPADO","s",12,140.0],["M23654","LEGGINS NENAS ESTAMPADO","s",12,140.0],["M65592","BOXER POLIESTER NENAS","s",12,140.0],["M65602","BOXER UNICOLOR NENAS","s",12,140.0],["M63232","BOXER LUNA","s",12,86.4],["M63233","BOXER LUNA","s",12,88.4],["M63234","BOXER LUNA","s",12,90.4],["M11532","M.P. TALL FRESCA DEDOS L","l",24,39.0],["M11533","M.P. TALL FRESCA DEDOS L","l",24,39.0],["M11534","M.P. TALL FRESCA DEDOS L","l",24,39.0],["M11535","M.P. TALL FRESCA DEDOS L","l",24,39.0],["M18652","M.P. OPAQUE 70","l",24,32.6],["M18653","M.P. OPAQUE 70","l",24,32.6],["M18654","M.P. OPAQUE 70","l",24,32.6],["M18655","M.P. OPAQUE 70","l",24,32.6],["M27997","BLUSA CONTROL AMI","s",12,204.4],["M27998","BLUSA CONTROL AMI","s",12,204.4],["M37756","MEDIA SLK POINTS","l",24,27.6],["M65052","BOXER CANDY","s",12,44.0],["M65053","BOXER CANDY","s",12,44.0],["M65054","BOXER CANDY","s",12,44.0],["M81532","CAMISETA DONATELO","s",24,94.6],["M81533","CAMISETA DONATELO","s",24,94.6],["M81534","CAMISETA DONATELO","s",24,94.6],["M81535","CAMISETA DONATELO","s",24,94.6],["M25952","TOP DEPORTIVO ESTAMPADO","s",12,64.6],["M25953","TOP DEPORTIVO ESTAMPADO","s",12,64.6],["M25954","TOP DEPORTIVO ESTAMPADO","s",12,64.6],["M25962","PANTALON DEPOR.ESTAMPADO","s",12,78.2],["M25963","PANTALON DEPOR.ESTAMPADO","s",12,78.2],["M25964","PANTALON DEPOR.ESTAMPADO","s",12,78.2],["M25972","SHORT TRAINING ESTAMPADO","s",12,50.4],["M25973","SHORT TRAINING ESTAMPADO","s",12,50.4],["M25974","SHORT TRAINING ESTAMPADO","s",12,50.4],["M29903","LEGGING CONTROL Y CONFORT","s",12,95.0],["M29904","LEGGING CONTROL Y CONFORT","s",12,95.0],["M29905","LEGGING CONTROL Y CONFORT","s",12,95.0],["M28077","HIGH WAIST SHORT EVOLUTI","s",12,138.4],["M28103","HIGH WAIST SHORT EVOLUTI","s",12,135.4],["M28104","HIGH WAIST SHORT EVOLUTI","s",12,135.4],["M28105","HIGH WAIST SHORT EVOLUTI","s",12,135.4],["M28102","HIGH WAIST SHORT EVOLUTI","s",12,135.4],["M33737","TOBILLERA REGINA","l",24,29.8],["M33738","TOBILLERA REGINA","l",24,29.8],["M23777","LEGGINS CONTROL","s",12,168.0],["M23778","LEGGINS CONTROL","s",12,168.0],["M35092","STYLE CONTROL FREE BUST","s",12,79.6],["M35093","STYLE CONTROL FREE BUST","s",12,79.6],["M35094","STYLE CONTROL FREE BUST","s",12,79.6],["M35096","STYLE CONTROL FREE BUST","s",12,81.6],["M24473","BICICLETERO BASICO","s",12,77.6],["M24474","BICICLETERO BASICO","s",12,77.6],["M24475","BICICLETERO BASICO","s",12,77.6],["M51602","BOXER UNICOLOR","s",12,70.6],["M51603","BOXER UNICOLOR","s",12,70.6],["M51604","BOXER UNICOLOR","s",12,70.6],["M51605","BOXER UNICOLOR","s",12,70.6],["M63222","TANGA LUNA","s",3,95.4],["M63223","TANGA LUNA","s",3,95.4],["M63224","TANGA LUNA","s",3,95.4],["M64762","BOXER MARCO CHT","s",12,77.0],["M64763","BOXER MARCO CHT","s",12,77.0],["M64764","BOXER MARCO CHT","s",12,77.0],["M64765","BOXER MARCO CHT","s",12,77.0],["M64802","PANTY FAJA BRASIL.SIMONE","s",6,38.6],["M64803","PANTY FAJA BRASIL.SIMONE","s",6,38.6],["M64804","PANTY FAJA BRASIL.SIMONE","s",6,38.6],["M80073","TOP BRASSIER CACHET","s",6,145.0],["M80074","TOP BRASSIER CACHET","s",6,145.0],["M80075","TOP BRASSIER CACHET","s",6,145.0],["M81652","TOP LUNA","s",6,101.0],["M81653","TOP LUNA","s",6,101.0],["M81654","TOP LUNA","s",6,101.0],["M26532","BOXER TALLE LIGHT","s",12,114.6],["M26533","BOXER TALLE LIGHT","s",12,114.6],["M26534","BOXER TALLE LIGHT","s",12,114.6],["M26535","BOXER TALLE LIGHT","s",12,114.6],["M65247","TANGA SEDUCCION","s",6,108.6],["M65248","TANGA SEDUCCION","s",6,108.6],["M33572","MP OPAQUE GALACTICA","l",24,67.8],["M33573","MP OPAQUE GALACTICA","l",24,67.8],["M33574","MP OPAQUE GALACTICA","l",24,67.8],["M65312","BOXER UNICOLOR LARGO","s",12,88.6],["M65313","BOXER UNICOLOR LARGO","s",12,88.6],["M65314","BOXER UNICOLOR LARGO","s",12,88.6],["M65315","BOXER UNICOLOR LARGO","s",12,88.6],["M31027","EUROSKINS ADULT MESH BAC","l",24,47.6],["M31028","EUROSKINS ADULT MESH BAC","l",24,47.6],["M83883","TOP BRA SAMY","s",12,88.4],["M83884","TOP BRA SAMY","s",12,88.4],["M83885","TOP BRA SAMY","s",12,88.4],["M65332","PANTY SAMY","s",6,61.6],["M65333","PANTY SAMY","s",6,61.6],["M65334","PANTY SAMY","s",6,61.6],["M65342","TANGA SAMY","s",6,52.0],["M65343","TANGA SAMY","s",6,52.0],["M65344","TANGA SAMY","s",6,52.0],["M83897","TOP BRA SUGAR","s",6,125.6],["M83898","TOP BRA SUGAR","s",6,125.6],["M65357","BOXER SUGAR","s",12,83.4],["M65358","BOXER SUGAR","s",12,83.4],["M65367","TANGA HILO SUGAR","s",2,75.4],["M65368","TANGA HILO SUGAR","s",2,75.4],["M83857","CAMISETA AVISPA PLUS","s",12,87.0],["M83858","CAMISETA AVISPA PLUS","s",12,87.0],["M33677","CAMISETA CTRL ENCAJE","s",12,118.8],["M33678","CAMISETA CTRL ENCAJE","s",12,118.8],["M33716","TOBILLERA ESTRELLAS","l",24,27.0],["M33726","BOTIN NOA","l",24,43.2],["M33742","MEDIA ACANALADA","l",24,19.8],["M33743","MEDIA ACANALADA","l",24,19.8],["M33744","MEDIA ACANALADA","l",24,19.8],["M33745","MEDIA ACANALADA","l",24,19.8],["M33622","MEDIA PANTALON TERMICA","l",24,51.6],["M33623","MEDIA PANTALON TERMICA","l",24,51.6],["M33624","MEDIA PANTALON TERMICA","l",24,51.6],["M33636","SLACK TERMICA","l",24,29.8],["M65322","LEGGINS TERMICO","s",12,228.6],["M65323","LEGGINS TERMICO","s",12,228.6],["M65324","LEGGINS TERMICO","s",12,228.6],["M33867","CAMISETA PRIMERA CAPA ML","s",12,120.0],["M33868","CAMISETA PRIMERA CAPA ML","s",12,120.0],["M33772","PANTALON DEPORTIVO ONIX","s",12,93.8],["M33773","PANTALON DEPORTIVO ONIX","s",12,93.8],["M33774","PANTALON DEPORTIVO ONIX","s",12,93.8],["M33782","TOP DEPORTIVO ONIX","s",12,44.8],["M33783","TOP DEPORTIVO ONIX","s",12,44.8],["M33784","TOP DEPORTIVO ONIX","s",12,44.8],["M33792","BIKER DEPORTIVO ONIX","s",12,69.6],["M33793","BIKER DEPORTIVO ONIX","s",12,69.6],["M33794","BIKER DEPORTIVO ONIX","s",12,69.6],["M33812","PANTALON DEP WORKOUT","s",12,101.4],["M33813","PANTALON DEP WORKOUT","s",12,101.4],["M33814","PANTALON DEP WORKOUT","s",12,101.4],["M33822","TOP WORKOUT","s",12,81.6],["M33823","TOP WORKOUT","s",12,81.6],["M33824","TOP WORKOUT","s",12,81.6],["M33832","SHORT WORKOUT","s",12,70.6],["M33833","SHORT WORKOUT","s",12,70.6],["M33834","SHORT WORKOUT","s",12,70.6],["M82667","CHAQUETA AURA","s",12,158.2],["M82668","CHAQUETA AURA","s",12,158.2],["M65307","JOGGER AURA","s",12,185.6],["M65308","JOGGER AURA","s",12,185.6],["M33876","CALCETIN AXEL","l",24,36.6],["M83932","CAMISETA ANDY ML","s",12,112.4],["M83933","CAMISETA ANDY ML","s",12,112.4],["M83934","CAMISETA ANDY ML","s",12,112.4],["M83935","CAMISETA ANDY ML","s",12,112.4],["M33667","BODY CONTROL ML","s",12,121.4],["M33668","BODY CONTROL ML","s",12,121.4],["M30852","CAMISETA BASICA MC","s",12,155.0],["M30853","CAMISETA BASICA MC","s",12,155.0],["M30854","CAMISETA BASICA MC","s",12,155.0],["M83913","BRASS STRAPLE CHANTALLE","s",12,120.0],["M83914","BRASS STRAPLE CHANTALLE","s",12,120.0],["M83915","BRASS STRAPLE CHANTALLE","s",12,120.0],["M65372","BOXER CHANTELLE","s",12,59.2],["M65373","BOXER CHANTELLE","s",12,59.2],["M65374","BOXER CHANTELLE","s",12,59.2],["M65382","TANGA CHANTALLE","s",6,140.0],["M65383","TANGA CHANTALLE","s",6,140.0],["M65384","TANGA CHANTALLE","s",6,140.0],["M33882","FALDA PANTALON SENSE","s",12,81.8],["M33883","FALDA PANTALON SENSE","s",12,81.8],["M33884","FALDA PANTALON SENSE","s",12,81.8],["M33892","TOP SENSE","s",12,75.0],["M33893","TOP SENSE","s",12,75.0],["M33894","TOP SENSE","s",12,75.0],["M33902","SHORT SENSE","s",12,75.8],["M33903","SHORT SENSE","s",12,75.8],["M33904","SHORT SENSE","s",12,75.8],["M33657","BODY CONTROL MC","s",12,193.4],["M33658","BODY CONTROL MC","s",12,201.8],["M83905","TOP CHANTELLE","s",12,95.8],["M83903","TOP CHANTELLE","s",12,95.8],["M83904","TOP CHANTELLE","s",12,95.8],["M33802","CAMISETA ONIX","s",12,80.8],["M33803","CAMISETA ONIX","s",12,80.8],["M33804","CAMISETA ONIX","s",12,80.8],["M65402","BOXER FRANCO","s",12,45.4],["M65403","BOXER FRANCO","s",12,45.4],["M65404","BOXER FRANCO","s",12,45.4],["M65405","BOXER FRANCO","s",12,45.4],["M65412","BOXER MAX","s",12,55.0],["M65413","BOXER MAX","s",12,55.0],["M65414","BOXER MAX","s",12,55.0],["M65415","BOXER MAX","s",12,55.0],["M65292","BICICLETERO","s",12,73.8],["M65293","BICICLETERO","s",12,73.8],["M65294","BICICLETERO","s",12,73.8],["M65295","BICICLETERO","s",12,73.8],["M83942","CAMISETA ADRIAN","s",12,52.8],["M83943","CAMISETA ADRIAN","s",12,83.0],["M83944","CAMISETA ADRIAN","s",12,83.0],["M83945","CAMISETA ADRIAN","s",12,83.0],["M83672","SUPER COMF BRA CUR3101","s",12,72.4],["M83673","SUPER COMF BRA CUR3101","s",12,72.4],["M83674","SUPER COMF BRA CUR3101","s",12,72.4],["M83675","SUPER COMF BRA CUR3101","s",12,72.4],["M83686","SUPER COMF BRA CUR3101","s",12,72.4],["M82683","CAMISETA MANGA LARGA NENAS","s",12,175.2],["M82684","CAMISETA MANGA LARGA NENAS","s",12,164.8],["M82685","CAMISETA MANGA LARGA NENAS","s",12,149.6],["M82693","CAMISETA MANGA CORTA","s",12,126.8],["M82694","CAMISETA MANGA CORTA","s",12,121.6],["M82695","CAMISETA MANGA CORTA","s",12,114.0],["M33913","LEGGINGS JULIANA","s",12,45.75],["M33914","LEGGINGS JULIANA","s",12,45.75],["M33915","LEGGINGS JULIANA","s",12,45.75],["M34007","MP FANTASY ESTAMP","l",24,32.6],["M34008","MP FANTASY ESTAMP","l",24,32.6],["M33923","BICICLETERO JULIANA","s",12,75.6],["M33924","BICICLETERO JULIANA","s",12,75.6],["M33925","BICICLETERO JULIANA","s",12,75.6],["M33934","TOBILLERA JULIANA","l",24,13.4],["M33935","TOBILLERA JULIANA","l",24,13.4],["M33936","TOBILLERA JULIANA","l",24,13.4],["M34052","EVOLUTION SHAPING CAPRI","s",12,92.4],["M34053","EVOLUTION SHAPING CAPRI","s",12,92.4],["M34054","EVOLUTION SHAPING CAPRI","s",12,92.4],["M34055","EVOLUTION SHAPING CAPRI","s",12,92.4],["M34067","EVOLUTION SHAPING CAPRI","s",12,93.6],["M34068","EVOLUTION SHAPING CAPRI","s",12,92.4],["M34033","CHILD FOOTLESS SHIMMER","l",24,61.0],["M34034","CHILD FOOTLESS SHIMMER","l",24,61.0],["M26022","MIA REDUCTORA ELEGANCE","s",12,92.4],["M26023","MIA REDUCTORA ELEGANCE","s",12,92.4],["M26024","MIA REDUCTORA ELEGANCE","s",12,92.4],["M83963","BRASSIER REBECA","s",12,126.0],["M83964","BRASSIER REBECA","s",12,126.0],["M83965","BRASSIER REBECA","s",12,126.0],["M65462","BOXER REBECA","s",12,66.0],["M65463","BOXER REBECA","s",12,66.0],["M65464","BOXER REBECA","s",12,66.0],["M65473","PANTY ADRI","s",12,76.6],["M65474","PANTY ADRI","s",12,76.6],["M65475","PANTY ADRI","s",12,76.6],["M83982","TOP ALANA","s",12,104.0],["M83983","TOP ALANA","s",12,104.0],["M83984","TOP ALANA","s",12,104.0],["M65482","BOXER ALANA","s",12,60.0],["M65483","BOXER ALANA","s",12,60.0],["M65484","BOXER ALANA","s",12,60.0],["M65502","PANTY ALANA","s",6,120.0],["M65503","PANTY ALANA","s",6,120.0],["M65504","PANTY ALANA","s",6,120.0],["M65492","TANGA ALANA","s",6,98.0],["M65493","TANGA ALANA","s",6,98.0],["M65494","TANGA ALANA","s",6,98.0],["M34087","CAMISETA MEGAN","s",12,117.6],["M34088","CAMISETA MEGAN","s",12,117.6],["M34097","BODY CONTROL MEDIO SILUETA PERFECTA","s",12,149.8],["M34098","BODY CONTROL MEDIO SILUETA PERFECTA","s",12,149.8],["M34317","BODY CONTROL EVA","o",12,78.0],["M34318","BODY CONTROL EVA","s",12,78.0],["M34307","BODY CONTROL PLUS TANGA","s",12,172.0],["M34308","BODY CONTROL PLUS TANGA","s",12,172.0],["M34152","LEGGINS CAMILA","s",12,375.8],["M34153","LEGGINS CAMILA","s",12,375.8],["M34154","LEGGINS CAMILA","s",12,375.8],["M34202","LEGGINS VALENTINA","s",12,353.6],["M34203","LEGGINS VALENTINA","s",12,353.6],["M34204","LEGGINS VALENTINA","s",12,353.6],["M34212","MP AMORE","l",24,61.4],["M34213","MP AMORE","l",24,61.4],["M34214","MP AMORE","l",24,61.4],["M34222","MP PET LOVE","l",24,61.4],["M34223","MP PET LOVE","l",24,61.4],["M34224","MP PET LOVE","l",24,61.4],["M83952","BRALLETTE ADA","s",12,97.2],["M83953","BRALLETTE ADA","s",12,97.2],["M83954","BRALLETTE ADA","s",12,97.2],["M83955","BRALLETTE ADA","s",12,97.2],["M65442","TANGA ADA","s",6,73.8],["M65443","TANGA ADA","s",6,73.8],["M65444","TANGA ADA","s",6,73.8],["M65452","PANTY ADA","s",6,73.8],["M65453","PANTY ADA","s",6,73.8],["M65454","PANTY ADA","s",6,73.8],["M83974","BRASSIER ADRI","s",12,71.0],["M83975","BRASSIER ADRI","s",12,71.0],["M83976","BRASSIER ADRI","s",12,71.0],["M34137","TALLE PESCADOR SILUETA PERFECTA","s",12,123.8],["M34138","TALLE PESCADOR SILUETA PERFECTA","s",12,123.8],["M34327","CAMISETA MASAJE  REDUCTORA(MIA)","s",12,92.4],["M34328","CAMISETA MASAJE  REDUCTORA(MIA)","s",12,92.4],["M34337","CAMISETA CTRL SUAVE EMILY(BETINA)","s",12,117.6],["M34338","CAMISETA CTRL SUAVE EMILY(BETINA)","s",12,117.6],["M34362","MP NUDE","l",12,42.0],["M34363","MP NUDE","l",12,42.0],["M34364","MP NUDE","l",12,42.0],["M65547","BOXER UNICOLOR","s",12,77.2],["M65548","BOXER UNICOLOR","s",12,77.2],["M34342","MP OPAQUE TALLE","l",24,47.8],["M34343","MP OPAQUE TALLE","l",24,47.8],["M34344","MP OPAQUE TALLE","l",24,47.8],["M34345","MP OPAQUE TALLE","l",24,47.8],["M84002","CAMISETA POLO CAFU","s",12,90.2],["M84003","CAMISETA POLO CAFU","s",12,90.2],["M84004","CAMISETA POLO CAFU","s",12,90.2],["M84005","CAMISETA POLO CAFU","s",12,90.2],["M34242","TOP ATHLETIC MESH","s",12,83.6],["M34243","TOP ATHLETIC MESH","s",12,83.6],["M34244","TOP ATHLETIC MESH","s",12,83.6],["M34252","PANTALON ATHLETIC MESH","s",12,106.0],["M34253","PANTALON ATHLETIC MESH","s",12,106.0],["M34254","PANTALON ATHLETIC MESH","s",12,106.0],["M34272","BICICLETERO ATHLETIC MESH","s",12,80.0],["M34273","BICICLETERO ATHLETIC MESH","s",12,80.0],["M34274","BICICLETERO ATHLETIC MESH","s",12,80.0],["M83992","CAMISETA CUELLO NERU TOM","s",12,73.4],["M83993","CAMISETA CUELLO NERU TOM","s",12,73.4],["M83994","CAMISETA CUELLO NERU TOM","s",12,73.4],["M83995","CAMISETA CUELLO NERU TOM","s",12,73.4],["M34232","BOXER MODAL JOSE","s",12,81.8],["M34233","BOXER MODAL JOSE","s",12,81.8],["M34234","BOXER MODAL JOSE","s",12,81.8],["M34235","BOXER MODAL JOSE","s",12,81.8],["M35123","CAM.TERMICA NINO MC 0553","s",12,123.0],["M35125","CAM.TERMICA NINO MC 0553","s",12,123.0],["M35133","CAM.TERMICA NINO ML 0554","s",12,123.0],["M35135","CAM.TERMICA NINO ML 0554","s",12,123.0],["M35166","TER MUJER C ALTO ML 1384","s",12,165.0],["M35103","CAM TERMICA HOMB MC 565","s",12,127.8],["M35113","CAM.TERMICA HOMB ML 1538","s",12,127.8],["M35143","CAM.TERMICA MUJER MC 521","s",12,127.8],["M35144","CAM.TERMICA MUJER MC 521","s",12,127.8],["M35156","TERM MUJER COLORS ML 523","s",12,127.8],["M65593","BOXER POLIESTER NENAS","s",12,75.0],["M65594","BOXER POLIESTER NENAS","s",12,75.0],["M65603","BOXER UNICOLOR NENAS","s",12,75.0],["M65604","BOXER UNICOLOR NENAS","s",12,75.0],["M34392","LEGGINS BRILLO","s",12,137.8],["M34393","LEGGINS BRILLO","s",12,137.8],["M34394","LEGGINS BRILLO","s",12,137.8],["M34372","COMFORT EVOLUTION PANTY","s",12,78.2],["M34373","COMFORT EVOLUTION PANTY","s",12,78.2],["M34374","COMFORT EVOLUTION PANTY","s",12,78.2],["M34375","COMFORT EVOLUTION PANTY","s",12,78.2],["M34387","COMFORT EVOLUTION PANTY","s",12,78.2],["M34388","COMFORT EVOLUTION PANTY","s",12,78.2],["M34402","BICICLETERO ESTAMPADO NENAS","s",12,132.2],["M34403","BICICLETERO ESTAMPADO NENAS","s",12,132.2],["M34404","BICICLETERO ESTAMPADO NENAS","s",12,132.2],["M34352","LEGGINS TALLE CONTROL","s",12,198.4],["M34353","LEGGINS TALLE CONTROL","s",12,198.4],["M34354","LEGGINS TALLE CONTROL","s",12,198.4],["M34355","LEGGINS TALLE CONTROL","s",12,198.4],["M84134","SEXY CONFORT BRA FANTASY","s",12,103.0],["M84135","SEXY CONFORT BRA FANTASY","s",12,103.0],["M84136","SEXY CONFORT BRA FANTASY","s",12,103.0],["M84144","SEXY CONFORT BRA ELEGAN","s",12,103.0],["M84145","SEXY CONFORT BRA ELEGAN","s",12,103.0],["M84146","SEXY CONFORT BRA ELEGAN","s",12,103.0],["M84153","BRALETTE AMELIA","s",12,110.2],["M84154","BRALETTE AMELIA","s",12,110.2],["M84155","BRALETTE AMELIA","s",12,110.2],["M65702","BOXER AMELIA","s",12,88.2],["M65703","BOXER AMELIA","s",12,88.2],["M65704","BOXER AMELIA","s",12,88.2],["M84172","TOP XIA","s",12,71.4],["M84173","TOP XIA","s",12,71.4],["M84174","TOP XIA","s",12,71.4],["M34698","BODY FASHION ASIMETRICO","s",12,65.0],["M35287","SLACK PREVENTIVA","l",24,30.0],["M35288","SLACK PREVENTIVA","l",24,30.0],["M34712","MP PREVENTIVA","l",24,46.0],["M34713","MP PREVENTIVA","l",24,46.0],["M34714","MP PREVENTIVA","l",24,46.0],["M34722","MP ULTRAFINE","l",24,34.2],["M34723","MP ULTRAFINE","l",24,34.2],["M34724","MP ULTRAFINE","l",24,34.2],["M34737","TOBI ULTRAFINE","l",24,14.8],["M34738","TOBI ULTRAFINE","l",24,14.8],["M34896","PUNTERA  UND","l",24,14.8],["M34677","BODY FASHION SISA","s",12,218.2],["M34678","BODY FASHION SISA","s",12,218.2],["M34687","BODY FASHION ML","s",12,218.2],["M34688","BODY FASHION ML","s",12,218.2],["M34697","BODY FASHION ASIMETRICO","s",12,65.0],["M84162","TOP DOS EN UNO","s",12,88.0],["M84163","TOP DOS EN UNO","s",12,88.0],["M84164","TOP DOS EN UNO","s",12,88.0],["M84182","TOP ACANALADO TIRAS","s",12,40.2],["M84183","TOP ACANALADO TIRAS","s",12,40.2],["M84184","TOP ACANALADO TIRAS","s",12,40.2],["M34667","TALLE TIRAS SILUETA","s",12,108.8],["M34668","TALLE TIRAS SILUETA","s",12,108.8],["M34669","TALLE TIRAS SILUETA","s",12,108.8],["M34657","BODY CONTROL TANGA","s",12,77.4],["M34658","BODY CONTROL TANGA","s",12,77.4],["M34772","BICICLETERO RUSH","s",12,94.6],["M34773","BICICLETERO RUSH","s",12,94.6],["M34774","BICICLETERO RUSH","s",12,94.6],["M34782","PANTALON DEPORTIVO RUSH","s",12,111.2],["M34783","PANTALON DEPORTIVO RUSH","s",12,111.2],["M34784","PANTALON DEPORTIVO RUSH","s",12,111.2],["M34792","TOP DEPORTIVO RUSH","s",12,63.0],["M34793","TOP DEPORTIVO RUSH","s",12,63.0],["M34794","TOP DEPORTIVO RUSH","s",12,63.0],["M34802","PANTALON ACANALADO","s",12,82.0],["M34803","PANTALON ACANALADO","s",12,82.0],["M34804","PANTALON ACANALADO","s",12,82.0],["M34812","BICICLETERO ACANALADO","s",12,59.2],["M34813","BICICLETERO ACANALADO","s",12,59.2],["M34814","BICICLETERO ACANALADO","s",12,59.2],["M34822","CAMISETA DEPORTIVA","s",12,111.0],["M34823","CAMISETA DEPORTIVA","s",12,111.0],["M34824","CAMISETA DEPORTIVA","s",12,111.0],["M34832","TOP VITAL","s",12,62.0],["M34833","TOP VITAL","s",12,62.0],["M34834","TOP VITAL","s",12,62.0],["M34842","TOP ZENITH","s",12,71.6],["M34843","TOP ZENITH","s",12,71.6],["M34844","TOP ZENITH","s",12,71.6],["M32312","FOOTLESS SHIMMER TIGHT","l",24,30.0],["M32313","FOOTLESS SHIMMER TIGHT","l",24,30.0],["M32315","FOOTLESS SHIMMER TIGHT","l",24,30.0],["M34932","PURE SHAPE THONG CUR3601","s",6,50.6],["M34933","PURE SHAPE THONG CUR3601","s",6,50.6],["M34934","PURE SHAPE THONG CUR3601","s",6,50.6],["M34935","PURE SHAPE THONG CUR3601","s",6,50.6],["M34947","PURE SHAPE THONG CUR3601","s",6,50.6],["M56672","TANGA CONTROL BASICA","s",6,50.6],["M56673","TANGA CONTROL BASICA","s",6,50.6],["M56674","TANGA CONTROL BASICA","s",6,50.6],["M65722","TANGA   UND","s",6,74.6],["M65723","TANGA   UND","s",6,74.6],["M65724","TANGA   UND","s",6,74.6],["M84224","CONFORT SCUPLT BRA","s",12,69.0],["M84225","CONFORT SCUPLT BRA","s",12,69.0],["M84226","CONFORT SCUPLT BRA","s",12,69.0],["M84234","BRA ESSENTIAL FIT","s",12,69.0],["M84235","BRA ESSENTIAL FIT","s",12,69.0],["M84236","BRA ESSENTIAL FIT","s",12,69.0],["M65763","PANTY MODELADOR CONTROL","s",12,56.4],["M65764","PANTY MODELADOR CONTROL","s",12,56.4],["M65765","PANTY MODELADOR CONTROL","s",12,56.4],["M84243","BRASSIER PUSH UP BASICO","s",12,60.8],["M84244","BRASSIER PUSH UP BASICO","s",12,60.8],["M84245","BRASSIER PUSH UP BASICO","s",12,60.8],["M84252","TOP BASICO","s",6,58.0],["M84253","TOP BASICO","s",6,58.0],["M84254","TOP BASICO","s",6,58.0],["M65732","BOXER BASICO","s",12,41.4],["M65733","BOXER BASICO","s",12,41.4],["M65734","BOXER BASICO","s",12,41.4],["M65742","PANTY BASICO","s",6,56.8],["M65743","PANTY BASICO","s",6,56.8],["M65744","PANTY BASICO","s",6,56.8],["M65752","TANGA BASICA","s",6,69.0],["M65753","TANGA BASICA","s",6,69.0],["M65754","TANGA BASICA","s",6,69.0],["M34967","BODY CONTROL PANTY","s",12,77.4],["M34968","BODY CONTROL PANTY","s",12,77.4],["M35257","BODY BASICO CUELLO REDONDO PANTY","s",12,112.8],["M35258","BODY BASICO CUELLO REDONDO PANTY","s",12,112.8],["M34982","LEGGINS BLONDA","s",12,95.4],["M34983","LEGGINS BLONDA","s",12,95.4],["M34984","LEGGINS BLONDA","s",12,95.4],["M35207","TOBI DUO PUNTOS","l",24,41.8],["M35208","TOBI DUO PUNTOS","l",24,41.8],["M35217","TOBI DUO UNICLOR","l",24,41.8],["M35218","TOBI DUO UNICLOR","l",24,41.8],["M65774","PANTY CONTROL","s",26,78.2],["M65775","PANTY CONTROL","s",27,78.2],["M65692","HIPSTER  UND","s",28,75.8],["M65693","HIPSTER  UND","s",29,75.8],["M65694","HIPSTER  UND","s",30,75.8],["M35232","TOP MANGA LARGA  NOVA","s",30,57.8],["M35233","TOP MANGA LARGA  NOVA","s",30,57.8],["M35234","TOP MANGA LARGA  NOVA","s",30,57.8],["M35242","TOP CUELLO ALTO CREMALLERA NOVA","s",30,62.6],["M35243","TOP CUELLO ALTO CREMALLERA NOVA","s",30,62.6],["M35244","TOP CUELLO ALTO CREMALLERA NOVA","s",30,62.6],["M84263","BRASSIER STAR","s",12,60.8],["M84264","BRASSIER STAR","s",12,60.8],["M84265","BRASSIER STAR","s",12,60.8],["M65773","PANTY CONTROL","s",25,78.2],["M35226","TOBILLERA SUPERVELADA RAYAS","l",30,62.6],["M35382","MP SEDA FRIA VELADISIMA","l",24,41.2],["M35383","MP SEDA FRIA VELADISIMA","l",24,41.2],["M35384","MP SEDA FRIA VELADISIMA","l",24,41.2],["M35385","MP SEDA FRIA VELADISIMA","l",24,41.2],["M35263","CAM.TERMICA MUJER SM0522","s",12,165.0],["M35264","CAM.TERMICA MUJER SM0522","s",12,165.0],["M35265","CAM.TERMICA HOMB. SM0564","s",12,165.0],["M55572","MATERNITY BODY SHAP.3208","s",24,169.2],["M55573","MATERNITY BODY SHAP.3208","s",24,169.2],["M55585","MATERNITY BODY SHAP.3208","s",24,169.2],["M55592","MATERNITY WAIST SHA.3209","s",24,169.2],["M55593","MATERNITY WAIST SHA.3209","s",24,169.2],["M55565","MATERNITY WAIST SHA.3209","s",24,169.2],["M35293","EVOLUTION MAGIC STRAPLES","s",24,169.2],["M35294","EVOLUTION MAGIC STRAPLES","s",24,169.2],["M35295","EVOLUTION MAGIC STRAPLES","s",24,169.2],["M35327","EVOLUTION MAGIC STRAPLES","s",24,169.2],["M55552","COMF.THONG BODYSUIT 3004","s",25,41.2],["M55553","COMF.THONG BODYSUIT 3004","s",26,41.2],["M55554","COMF.THONG BODYSUIT 3004","s",27,41.2],["M55555","COMF.THONG BODYSUIT 3004","s",28,41.2],["M55567","COMF.THONG BODYSUIT 3007","s",29,41.2],["M55568","COMF.THONG BODYSUIT 3008","s",30,41.2],["M55757","BODY C.ALTO SISA TANGA","s",12,120.2],["M55758","BODY C.ALTO SISA TANGA","s",12,120.2],["M55767","BODY BASICO TIRAS TANGA","s",12,120.2],["M55768","BODY BASICO TIRAS TANGA","s",12,120.2],["M55777","BODY C.REDONDO MC PANTY","s",12,120.2],["M55778","BODY C.REDONDO MC PANTY","s",12,120.2],["M55787","BODY BASICO HALTER TANGA","s",12,120.2],["M55788","BODY BASICO HALTER TANGA","s",12,120.2],["M55797","CAMISETA CUELLO V M.CORT","s",12,111.0],["M55798","CAMISETA CUELLO V M.CORT","s",12,111.0],["M84277","CROP TOP ABRIL","s",12,82.4],["M84278","CROP TOP ABRIL","s",12,82.4],["M84287","CROP TOP MARTINA","s",12,82.4],["M84288","CROP TOP MARTINA","s",12,82.4],["M84297","CROP TOP KIRA","s",12,82.4],["M84298","CROP TOP KIRA","s",12,82.4],["M84307","CROP TOP MIA","s",12,82.4],["M84308","CROP TOP MIA","s",12,82.4],["M55837","BODY C.REDONDO MC  TANGA","s",12,82.4],["M55838","BODY C.REDONDO MC  TANGA","s",12,82.4],["M55846","BOTIN CAMELIA","l",24,25.8],["M55886","TOBI CORAZON","l",24,25.8],["M55907","TOBI RAYAS MULTICOLOR","l",24,34.0],["M55908","TOBI RAYAS MULTICOLOR","l",24,34.0],["M34977","BODY BASICO CUELLO REDONDO TANGA","s",12,112.8],["M34978","BODY BASICO CUELLO REDONDO TANGA","s",12,112.8],["M55857","BALETA SECRETA UND","l",24,33.4],["M55858","BALETA SECRETA UND","l",24,33.4],["M55867","BALETA SECRETA UND","l",24,33.4],["M55868","BALETA SECRETA UND","l",24,33.4],["M56082","BIKER RUSH","s",12,94.6],["M56083","BIKER RUSH","s",12,94.6],["M56084","BIKER RUSH","s",12,94.6],["M56092","PANTALON DEP RUSH","s",12,111.2],["M56093","PANTALON DEP RUSH","s",12,111.2],["M56094","PANTALON DEP RUSH","s",12,111.2],["M56102","TOP DEP RUSH","s",12,63.0],["M56103","TOP DEP RUSH","s",12,63.0],["M56104","TOP DEP RUSH","s",12,63.0],["M55926","BOTIN PUNTOS","l",12,18.6],["M55936","BOTIN LISO","l",12,18.6],["M55946","BOTIN FLORES","l",12,18.6],["M35343","MP DESCANSO 40","l",24,18.6],["M35344","MP DESCANSO 40","l",24,18.6],["M35345","MP DESCANSO 40","l",24,18.6],["M55893","BICICLETERO SHAPE","s",24,18.6],["M55894","BICICLETERO SHAPE","s",24,18.6],["M55895","BICICLETERO SHAPE","s",24,18.6],["M56346","MEDIA CANALADA DEPORTIVA","l",24,18.6],["M68007","MANGAS CAMISETA LOLA","s",24,18.6],["M68008","MANGAS CAMISETA LOLA","s",24,18.6],["M84324","BRASSIER SHAPE","s",12,109.0],["M84325","BRASSIER SHAPE","s",12,109.0],["M84326","BRASSIER SHAPE","s",12,109.0],["M56252","LEGGINS DEPORTIVO DASH","s",12,95.4],["M56253","LEGGINS DEPORTIVO DASH","s",12,95.4],["M56254","LEGGINS DEPORTIVO DASH","s",12,95.4],["M56262","TOP DEPORTIVO DASH","s",12,76.4],["M56263","TOP DEPORTIVO DASH","s",12,76.4],["M56264","TOP DEPORTIVO DASH","s",12,76.4],["M56272","SHORT DEPORTIVO DASH","s",12,59.2],["M56273","SHORT DEPORTIVO DASH","s",12,59.2],["M56274","SHORT DEPORTIVO DASH","s",12,59.2],["M35302","CHAQUETA DEPORTIVO DASH","s",12,83.0],["M35303","CHAQUETA DEPORTIVO DASH","s",12,83.0],["M35304","CHAQUETA DEPORTIVO DASH","s",12,83.0],["M56692","BOXER PIA","s",12,90.0],["M56693","BOXER PIA","s",12,90.0],["M56694","BOXER PIA","s",12,90.0],["M56702","TANGA PIA","s",6,141.0],["M56703","TANGA PIA","s",6,141.0],["M56704","TANGA PIA","s",6,141.0],["M84372","TOP BRA PIA","s",12,128.0],["M84373","TOP BRA PIA","s",12,128.0],["M84374","TOP BRA PIA","s",12,128.0],["M84382","BRASSIER PIA","s",12,67.8],["M84383","BRASSIER PIA","s",12,67.8],["M84384","BRASSIER PIA","s",12,67.8],["M56887","BODY PIA","s",12,109.2],["M56888","BODY PIA","s",12,109.2],["M56747","BODY ML SECOND SKIN","s",12,120.2],["M56748","BODY ML SECOND SKIN","s",12,146.2],["M56757","BODY SISA SECOND SKIN","s",12,120.2],["M56758","BODY SISA SECOND SKIN","s",12,146.2],["M56767","BODY SHAPE TANGA 3/4","s",12,86.6],["M56768","BODY SHAPE TANGA 3/4","s",12,86.6],["M56777","BODY SHAPE STRAPL.TANGA","s",12,86.6],["M56778","BODY SHAPE STRAPL.TANGA","s",12,86.6],["M56832","MP NUDE OPACA","l",12,125.8],["M56833","MP NUDE OPACA","l",12,125.8],["M56834","MP NUDE OPACA","l",12,125.8],["M56842","MP MALLA PUNTOS","l",12,85.8],["M56843","MP MALLA PUNTOS","l",12,85.8],["M56844","MP MALLA PUNTOS","l",12,85.8],["M56856","SLACK MALLA PUNTOS","l",12,59.0],["M56866","TOBILLERA MALLA PUNTOS","l",12,59.0],["M56662","BOXER BASICO RAYAS","s",12,36.8],["M56663","BOXER BASICO RAYAS","s",87,36.8],["M56664","BOXER BASICO RAYAS","s",12,36.8],["M56665","BOXER BASICO RAYAS","s",12,36.8],["M56682","TANGA BASICA RAYAS","s",6,51.0],["M56683","TANGA BASICA RAYAS","s",6,51.0],["M56684","TANGA BASICA RAYAS","s",6,51.0],["M84352","TOP BRA BASICO RAYAS","s",6,51.0],["M84353","TOP BRA BASICO RAYAS","s",6,51.0],["M84354","TOP BRA BASICO RAYAS","s",6,51.0],["M84363","BRASSIER BASICO RAYAS","s",12,51.0],["M84364","BRASSIER BASICO RAYAS","s",12,51.0],["M84365","BRASSIER BASICO RAYAS","s",12,51.0],["M18273","PANTY M.P. TALLE","s",12,107.6],["M18274","PANTY M.P. TALLE","s",12,107.6],["M18275","PANTY M.P. TALLE","s",12,107.6],["M66907","TOBI URBAN","l",24,32.0],["M66908","TOBI URBAN","l",24,32.0],["M67237","BOTIN DISEÑOS","l",24,28.0],["M67238","BOTIN DISEÑOS","l",24,28.0],["M67257","BOTIN URBAN LUREX","l",24,40.0],["M67258","BOTIN URBAN LUREX","l",24,40.0],["M67263","MP CAMELIA","l",24,103.8],["M67264","MP CAMELIA","l",24,103.8],["M67265","MP CAMELIA","l",24,103.8],["M67287","BOTIN DISENO LISO","l",24,30.0],["M67288","BOTIN DISENO LISO","l",24,30.0],["M67346","BOTIN RAYAS POLIESTER","l",24,42.0],["M37366","BOTIN PUNTOS POLIESTER","l",24,42.0],["M67277","BODY TOP SECOND SKIN","s",12,107.0],["M67278","BODY TOP SECOND SKIN","s",12,131.6]];
+var REFS_PROD_MAP = {};
+(function () { for (var i = 0; i < REFS_PROD.length; i++) REFS_PROD_MAP[String(REFS_PROD[i][0]).toUpperCase()] = REFS_PROD[i]; })();
+// code -> { peso: bool, fibras: bool } segun las fichas de precosteo en la nube
+var FICHAS_ESTADO = null;
+
+function initFichasFirebase() {
+  if (_fichasDb) return _fichasDb;
+  try {
+    if (typeof firebase === 'undefined') return null;
+    var app = firebase.apps && firebase.apps.some(function(a){return a.name==='fichas';})
+      ? firebase.app('fichas') : firebase.initializeApp(FICHAS_FB_CFG, 'fichas');
+    _fichasDb = app.firestore();
+    return _fichasDb;
+  } catch(e) { console.error('Firebase fichas error', e); return null; }
+}
+function cargarGasUrlDeLaNube() {
+  var db = initFichasFirebase();
+  if (!db) return;
+  db.collection('fichas').doc('GF-GAS-URL').get().then(function(doc) {
+    if (!doc.exists) return;
+    var url = limpiarGasUrl((doc.data() || {}).url || '');
+    if (!url) return;
+    GAS_URL = url;
+    try { localStorage.setItem('gf_gas_url', url); } catch(e){}
+    var ui = document.getElementById('url-input'); if (ui) ui.value = url;
+    var sd = document.getElementById('setup-div'); if (sd) sd.style.display = 'none';
+    if (typeof cargarCorriendo === 'function') cargarCorriendo();
+    if (typeof cargarConsumoHoy === 'function') cargarConsumoHoy();
+  }).catch(function(e){ console.warn('No se pudo traer la URL de la nube', e); });
+}
+
+function fichaToMaterial(id, d) {
+  var h = d.header || {}, sp = d.specs || {};
+  var code = (h.referencia || '').toString().trim().toUpperCase();
+  var pesoTubo = parseFloat(sp.pesoUnitarioGramos);
+  var tubosPorDocena = parseInt(h.tubosPorDocena) || 12;
+  var tMin = parseFloat(sp.tiempoMin), tSeg = parseFloat(sp.tiempoSeg);
+  var tiempoPorTuboMin = (isNaN(tMin)?0:tMin) + (isNaN(tSeg)?0:tSeg) / 60;
+  if (!code) return null;
+  if (isNaN(pesoTubo) || pesoTubo <= 0) return null; // sin peso, ficha incompleta para materiales
+  var fibras = [];
+  var arr = d.fibras || [];
+  for (var i = 0; i < arr.length; i++) {
+    var f = arr[i];
+    var pct = parseFloat(f.porcentaje);
+    if (isNaN(pct) || pct <= 0) continue;
+    fibras.push({
+      nombre: f.nombre || '',
+      titulo: f.titulo || (f.nombre || 'Sin titulo'),
+      lote: f.lote || '',
+      porcentaje: pct,
+      itemS: f.itemS || '',
+      itemZ: f.itemZ || ''
+    });
+  }
+  if (!fibras.length) return null;
+  return {
+    code: code,
+    nombre: (d.nombrePrenda || code).toString().trim(),
+    tubosPorDocena: tubosPorDocena,
+    pesoTuboG: pesoTubo,
+    tiempoPorTuboMin: tiempoPorTuboMin > 0 ? tiempoPorTuboMin : null,
+    fibras: fibras
+  };
+}
+
+// Solo los precosteos (ids SW-... y STRUCT-...): antes se leia TODA la coleccion (lotes, medidas, etc.) en cada equipo
+function leerPrecosteos(db) {
+  var FP = firebase.firestore.FieldPath, col = db.collection('fichas');
+  var q = function(p) { return col.where(FP.documentId(), '>=', p).where(FP.documentId(), '<', p + '').get(); };
+  return Promise.all([q('SW-'), q('STRUCT-')]).then(function(r) { return { forEach: function(f) { r.forEach(function(s) { s.forEach(f); }); } }; });
+}
+function syncMateriales(cb) {
+  var st = document.getElementById('fichas-status');
+  // AHORRO DE CUOTA: leer toda la coleccion solo si el guardado tiene mas de 60 min (o con ?fresh=1)
+  try {
+    var _c = JSON.parse(localStorage.getItem('hilos_fichas_full') || 'null');
+    if (_c && _c.mats && _c.est && Date.now() - _c.ts < 3600000 && !/[?&]fresh=1/.test(location.search)) {
+      MATERIALES = _c.mats; FICHAS_ESTADO = _c.est;
+      if (st) st.textContent = Object.keys(_c.mats).length + ' referencias con composicion de hilo (guardado hace ' + Math.round((Date.now() - _c.ts) / 60000) + ' min; recarga con ?fresh=1 para forzar)';
+      fillPedidoDatalist(); renderCobertura(); if (cb) cb();
+      return;
+    }
+  } catch (e) {}
+  var db = initFichasFirebase();
+  if (!db) {
+    var cached = loadMaterialesCache();
+    if (cached) { MATERIALES = cached; if (st) st.textContent = 'Sin conexion a Fichas. Usando la ultima version guardada (' + Object.keys(MATERIALES).length + ' referencias).'; }
+    else if (st) st.textContent = 'No se pudo conectar con Fichas.';
+    if (cb) cb();
+    return;
+  }
+  leerPrecosteos(db).then(function(snap) {
+    var mats = {}, estado = {};
+    snap.forEach(function(doc) {
+      var dd = doc.data() || {};
+      var cd = ((dd.header || {}).referencia || '').toString().trim().toUpperCase();
+      if (cd) {
+        var arrF = dd.fibras || [], hayF = false;
+        for (var q = 0; q < arrF.length; q++) { if (parseFloat(arrF[q].porcentaje) > 0) { hayF = true; break; } }
+        estado[cd] = { peso: parseFloat((dd.specs || {}).pesoUnitarioGramos) > 0, fibras: hayF };
+      }
+      var m = fichaToMaterial(doc.id, dd);
+      if (m) mats[m.code] = m;
+    });
+    FICHAS_ESTADO = estado;
+    MATERIALES = mats;
+    try { localStorage.setItem('hilos_materiales_cache', JSON.stringify(mats)); } catch(e){}
+    try { localStorage.setItem('hilos_fichas_full', JSON.stringify({ ts: Date.now(), mats: mats, est: estado })); } catch(e){}
+    if (st) st.textContent = Object.keys(mats).length + ' referencias con composicion de hilo (' + new Date().toLocaleTimeString() + ')';
+    fillPedidoDatalist();
+    renderCobertura();
+    if (cb) cb();
+  }).catch(function(err) {
+    console.error(err);
+    var cached = loadMaterialesCache();
+    if (cached) { MATERIALES = cached; if (st) st.textContent = 'Error consultando Fichas. Usando la ultima version guardada (' + Object.keys(MATERIALES).length + ' referencias).'; }
+    else if (st) st.textContent = 'Error consultando Fichas: ' + err.message;
+    fillPedidoDatalist();
+    if (cb) cb();
+  });
+}
+
+function loadMaterialesCache() {
+  try {
+    var raw = localStorage.getItem('hilos_materiales_cache');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+// ============================================================
+// Tabs
+// ============================================================
+function showTab(name) {
+  var tabs = ['corriendo', 'consumo', 'pedido', 'recibo'];
+  for (var i = 0; i < tabs.length; i++) {
+    document.getElementById('tab-' + tabs[i]).classList.toggle('on', tabs[i] === name);
+    document.getElementById('panel-' + tabs[i]).classList.toggle('on', tabs[i] === name);
+  }
+}
+
+// Suma kg por titulo+lote a partir de gramos totales de un material, dentro
+// de un acumulador compartido "porTituloLote" (mutado in-place).
+function acumularFibras(porTituloLote, mat, gramosTotal) {
+  for (var j = 0; j < mat.fibras.length; j++) {
+    var f = mat.fibras[j];
+    var key = f.nombre + '|' + f.titulo + '|' + f.lote;
+    if (!porTituloLote[key]) porTituloLote[key] = { nombre: f.nombre, titulo: f.titulo, lote: f.lote, itemS: f.itemS, itemZ: f.itemZ, gramos: 0 };
+    porTituloLote[key].gramos += gramosTotal * (f.porcentaje / 100);
+  }
+}
+
+function renderTablaHilo(porTituloLote, totalLabel, targetEl) {
+  var keys = Object.keys(porTituloLote).sort(function(a, b) { return porTituloLote[b].gramos - porTituloLote[a].gramos; });
+  if (!keys.length) { targetEl.innerHTML = '<div class="empty">Sin datos para mostrar.</div>'; return; }
+  var totalKg = 0;
+  var html = '<table><thead><tr><th>Titulo de hilo</th><th>Lote</th><th>Tipo</th><th>Items (S / Z)</th><th style="text-align:right">Kg</th></tr></thead><tbody>';
+  for (var k = 0; k < keys.length; k++) {
+    var row = porTituloLote[keys[k]];
+    var kg = row.gramos / 1000;
+    totalKg += kg;
+    html += '<tr><td class="tit">' + row.titulo + '</td><td class="lote-tag">' + (row.lote || '-') + '</td><td class="sub">' + row.nombre + '</td><td>' +
+      (row.itemS ? '<span class="tag tag-s">S ' + row.itemS + '</span>' : '') +
+      (row.itemZ ? '<span class="tag tag-z">Z ' + row.itemZ + '</span>' : '') +
+      (!row.itemS && !row.itemZ ? '<span class="sub">-</span>' : '') +
+      '</td><td class="kg">' + kg.toFixed(2) + ' kg</td></tr>';
+  }
+  html += '<tr class="total-row"><td colspan="4">' + totalLabel + '</td><td class="kg">' + totalKg.toFixed(2) + ' kg</td></tr>';
+  html += '</tbody></table>';
+  targetEl.innerHTML = html;
+}
+
+// ============================================================
+// Lo que esta corriendo AHORA: lee la hoja EnCurso (actualizada por
+// index.html cada vez que se abre/cierra un lote) y proyecta produccion
+// con el tiempo estandar por tubo de cada referencia * eficiencia esperada.
+// ============================================================
+function cargarCorriendo() {
+  var st = document.getElementById('corriendo-status');
+  if (!GAS_URL) { st.textContent = 'Configure la conexion (icono de arriba) para ver esto.'; return; }
+  st.textContent = 'Cargando...';
+  fetch(GAS_URL + '?action=leer_estado')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var estados = data.estados || [];
+      var corriendo = [];
+      for (var i = 0; i < estados.length; i++) {
+        if ((estados[i].Estado || '').toString().toUpperCase() === 'CORRIENDO') corriendo.push(estados[i]);
+      }
+      renderCorriendo(corriendo);
+    })
+    .catch(function(e) {
+      st.textContent = 'Error leyendo el estado de las maquinas: ' + e.message + '. Verifique que ya actualizo el Apps Script con la hoja EnCurso (ver guia).';
+    });
+}
+
+// Marca una maquina como CORRIENDO directamente contra el servidor, sin
+// pasar por index.html. Util para arrancar la hoja EnCurso con lo que ya
+// esta trabajando en planta antes de este cambio.
+function reportarManual() {
+  var st = document.getElementById('reportar-status');
+  if (!GAS_URL) { st.textContent = 'Configure la conexion (icono de arriba) primero.'; return; }
+  var maqId = (document.getElementById('rep-maq').value || '').trim().toUpperCase();
+  var q = document.getElementById('rep-ref-q').value;
+  if (!maqId) { st.textContent = 'Ingrese el ID de la maquina.'; return; }
+  var mat = findMaterialFromInput(q);
+  if (!mat) { st.textContent = 'Referencia no encontrada en Fichas.'; return; }
+  st.textContent = 'Guardando...';
+  var payload = { maqId: maqId, refId: mat.code, refNombre: mat.nombre, fecha: hoy(), hi: new Date().toTimeString().slice(0,5), estado: 'CORRIENDO' };
+  fetch(GAS_URL + '?action=estado_actual&d=' + encodeURIComponent(JSON.stringify(payload)))
+    .then(function(r) { return r.json(); })
+    .then(function(resp) {
+      if (resp.ok) {
+        st.textContent = maqId + ' marcada corriendo con ' + mat.code + ' - ' + mat.nombre + '.';
+        document.getElementById('rep-maq').value = '';
+        document.getElementById('rep-ref-q').value = '';
+        cargarCorriendo();
+      } else {
+        st.textContent = 'El servidor respondio con error: ' + (resp.error || JSON.stringify(resp));
+      }
+    })
+    .catch(function(e) { st.textContent = 'Error guardando: ' + e.message; });
+}
+
+function renderCorriendo(corriendo) {
+  var st = document.getElementById('corriendo-status');
+  var maqDiv = document.getElementById('corriendo-maquinas');
+  var body = document.getElementById('corriendo-body');
+  var horas = parseFloat(document.getElementById('proy-horas').value) || 0;
+  var effPct = parseFloat(document.getElementById('proy-eff').value);
+  if (isNaN(effPct) || effPct <= 0) effPct = 85;
+
+  if (!corriendo.length) {
+    st.textContent = 'No hay maquinas marcadas como corriendo. Si la planta esta activa, verifique: (1) que el Apps Script en Google ya tiene el codigo actualizado con la hoja EnCurso y quedo redesplegado como Nueva version, y (2) que se abrio o cerro algun lote en Produccion despues de ese cambio. Mientras tanto puede usar "Reportar manualmente" abajo.';
+    maqDiv.innerHTML = '';
+    body.innerHTML = '<div class="empty">Sin datos para mostrar.</div>';
+    return;
+  }
+
+  var porTituloLote = {};
+  var sinFicha = [];
+  var sinTiempo = [];
+  var maqHtml = '';
+  var maqOk = 0;
+
+  for (var i = 0; i < corriendo.length; i++) {
+    var e = corriendo[i];
+    var code = (e.RefID || '').toString().trim().toUpperCase();
+    var mat = MATERIALES[code];
+    var etiqueta = e.MaqID + ' &rarr; ' + (e.Referencia || code || '?');
+    if (!mat) { sinFicha.push(e.MaqID + ' (' + code + ')'); maqHtml += '<span class="maq-mini"><b>' + e.MaqID + '</b> sin ficha</span>'; continue; }
+    if (!mat.tiempoPorTuboMin) { sinTiempo.push(e.MaqID + ' (' + code + ')'); maqHtml += '<span class="maq-mini"><b>' + e.MaqID + '</b> sin tiempo</span>'; continue; }
+    var tubosHora = 60 / mat.tiempoPorTuboMin;
+    var tubosProyectados = tubosHora * horas * (effPct / 100);
+    var gramosTotal = tubosProyectados * mat.pesoTuboG;
+    acumularFibras(porTituloLote, mat, gramosTotal);
+    maqHtml += '<span class="maq-mini"><b>' + e.MaqID + '</b> ' + code + ' - ' + Math.round(tubosProyectados) + ' tubos proy.</span>';
+    maqOk++;
+  }
+
+  maqDiv.innerHTML = maqHtml;
+  st.textContent = corriendo.length + ' maquinas corriendo ahora - ' + maqOk + ' con ficha completa' +
+    (sinFicha.length ? ' - sin ficha de hilo: ' + sinFicha.join(', ') : '') +
+    (sinTiempo.length ? ' - sin tiempo por tubo: ' + sinTiempo.join(', ') : '');
+
+  renderTablaHilo(porTituloLote, 'Total hilo necesario (proyectado ' + horas + 'h al ' + effPct + '% de eficiencia)', body);
+}
+
+// ============================================================
+// Consumo de hoy: suma tubos por referencia (lotes YA CERRADOS) y
+// convierte a kg de hilo por titulo y lote, usando MATERIALES.
+// ============================================================
+function cargarConsumoHoy() {
+  var st = document.getElementById('consumo-status');
+  if (!GAS_URL) { st.textContent = 'Configure la conexion (icono de arriba) para ver el consumo de hoy.'; return; }
+  st.textContent = 'Cargando...';
+  fetch(GAS_URL + '?action=leer&fecha=' + hoy())
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var filas = data.filas || [];
+      var todayStr = hoy();
+      var tubosPorRef = {};
+      var lotesHoy = 0;
+      for (var i = 0; i < filas.length; i++) {
+        var f = filas[i];
+        if (parseFecha(f.Fecha) !== todayStr) continue;
+        var ref = (f.RefID || '').toString().trim().toUpperCase();
+        var tubos = parseInt(f.Tubos) || 0;
+        if (!ref || !tubos) continue;
+        tubosPorRef[ref] = (tubosPorRef[ref] || 0) + tubos;
+        lotesHoy++;
+      }
+      renderConsumo(tubosPorRef, lotesHoy);
+    })
+    .catch(function(e) {
+      st.textContent = 'Error leyendo produccion: ' + e.message;
+    });
+}
+
+function renderConsumo(tubosPorRef, lotesHoy) {
+  var st = document.getElementById('consumo-status');
+  var body = document.getElementById('consumo-body');
+  var porTituloLote = {};
+  var refsSinFicha = [];
+  var refCodes = Object.keys(tubosPorRef);
+
+  for (var i = 0; i < refCodes.length; i++) {
+    var code = refCodes[i];
+    var tubos = tubosPorRef[code];
+    var mat = MATERIALES[code];
+    if (!mat) { refsSinFicha.push(code); continue; }
+    acumularFibras(porTituloLote, mat, tubos * mat.pesoTuboG);
+  }
+
+  if (!Object.keys(porTituloLote).length) {
+    st.textContent = lotesHoy ? 'Hay lotes cerrados hoy, pero ninguna de sus referencias tiene ficha con hilo cargado todavia.' : 'Todavia no hay lotes cerrados hoy.';
+    body.innerHTML = '<div class="empty">Sin datos para mostrar.</div>';
+    return;
+  }
+
+  st.textContent = lotesHoy + ' lotes cerrados hoy - ' + refCodes.length + ' referencias produciendo' + (refsSinFicha.length ? ' (' + refsSinFicha.length + ' sin ficha de hilo: ' + refsSinFicha.join(', ') + ')' : '');
+  renderTablaHilo(porTituloLote, 'Total hilo consumido hoy', body);
+}
+
+// ============================================================
+// Calculadora de pedido
+// ============================================================
+function fillPedidoDatalist() {
+  var dl = document.getElementById('ped-ref-list');
+  var codes = Object.keys(MATERIALES).sort();
+  var html = '';
+  for (var i = 0; i < codes.length; i++) {
+    var m = MATERIALES[codes[i]];
+    html += '<option value="' + m.code + ' - ' + m.nombre + '">';
+  }
+  // Resto de referencias de Produccion: se pueden elegir, pero avisan que falta el hilo
+  for (var j = 0; j < REFS_PROD.length; j++) {
+    var rp = REFS_PROD[j];
+    if (MATERIALES[String(rp[0]).toUpperCase()]) continue;
+    html += '<option value="' + rp[0] + ' - ' + String(rp[1]).replace(/"/g, '&quot;') + '" label="sin hilo cargado">';
+  }
+  dl.innerHTML = html;
+}
+
+function onPedRefInput() {
+  // Solo informativo; el calculo se hace al pulsar el boton
+}
+
+function findMaterialFromInput(text) {
+  text = (text || '').trim();
+  if (!text) return null;
+  var code = text.split(' - ')[0].trim().toUpperCase();
+  if (MATERIALES[code]) return MATERIALES[code];
+  var codes = Object.keys(MATERIALES);
+  var lower = text.toLowerCase();
+  for (var i = 0; i < codes.length; i++) {
+    var m = MATERIALES[codes[i]];
+    if (m.code.toLowerCase() === lower) return m;
+  }
+  for (var i = 0; i < codes.length; i++) {
+    var m = MATERIALES[codes[i]];
+    if ((m.code + ' ' + m.nombre).toLowerCase().indexOf(lower) >= 0) return m;
+  }
+  return null;
+}
+
+function calcularPedido() {
+  var q = document.getElementById('ped-ref-q').value;
+  var docenas = parseFloat(document.getElementById('ped-docenas').value);
+  var info = document.getElementById('ped-ref-info');
+  var body = document.getElementById('pedido-body');
+
+  var mat = findMaterialFromInput(q);
+  if (!mat) {
+    var rpc = String(q || '').split(' - ')[0].trim().toUpperCase();
+    var rp = REFS_PROD_MAP[rpc];
+    if (rp) info.textContent = rp[0] + ' - ' + rp[1] + ' existe en Produccion, pero no se puede calcular: ' + motivoSinHilo(rpc).toLowerCase() + '. Complete la ficha de precosteo (peso del tubo e hilos) y aparece aqui sola.';
+    else info.textContent = 'Referencia no encontrada en Produccion ni en Fichas.';
+    body.innerHTML = '';
+    return;
+  }
+  if (isNaN(docenas) || docenas <= 0) { info.textContent = mat.code + ' - ' + mat.nombre + ' (tubosPorDocena=' + mat.tubosPorDocena + '). Ingrese cuantas docenas.'; body.innerHTML = ''; return; }
+
+  var tubosNecesarios = Math.ceil(docenas * mat.tubosPorDocena);
+  info.textContent = mat.code + ' - ' + mat.nombre + ': ' + docenas + ' docenas = ' + tubosNecesarios + ' tubos (tubosPorDocena=' + mat.tubosPorDocena + ')';
+
+  var porTituloLote = {};
+  acumularFibras(porTituloLote, mat, tubosNecesarios * mat.pesoTuboG);
+  renderTablaHilo(porTituloLote, 'Total hilo para el pedido', body);
+}
+
+
+// ============================================================
+// Cobertura: que referencias de Produccion ya tienen peso + hilo
+// ============================================================
+function motivoSinHilo(code) {
+  if (MATERIALES[code]) return 'Completa';
+  if (!FICHAS_ESTADO) return 'Sin ficha de precosteo (o sin conexion a Fichas)';
+  var e = FICHAS_ESTADO[code];
+  if (!e) return 'Sin ficha de precosteo';
+  if (!e.peso && !e.fibras) return 'Ficha sin peso ni hilos';
+  if (!e.peso) return 'Ficha sin peso del tubo';
+  return 'Ficha sin hilos';
+}
+function renderCobertura() {
+  var st = document.getElementById('cob-status');
+  var body = document.getElementById('cob-body');
+  if (!st || !body) return;
+  var total = REFS_PROD.length, ok = 0, cuenta = {};
+  for (var i = 0; i < total; i++) {
+    var c = String(REFS_PROD[i][0]).toUpperCase();
+    if (MATERIALES[c]) { ok++; continue; }
+    var mo = motivoSinHilo(c);
+    cuenta[mo] = (cuenta[mo] || 0) + 1;
+  }
+  var partes = [];
+  for (var k in cuenta) if (cuenta.hasOwnProperty(k)) partes.push(cuenta[k] + ' ' + k.toLowerCase());
+  st.textContent = ok + ' de ' + total + ' referencias de Produccion ya entran a la calculadora' + (partes.length ? ' - faltan: ' + partes.join(', ') : '') + '.';
+  var q = (document.getElementById('cob-q').value || '').toLowerCase().trim();
+  var grupos = {}, orden = [];
+  for (var j = 0; j < total; j++) {
+    var r = REFS_PROD[j], code = String(r[0]).toUpperCase();
+    if (MATERIALES[code]) continue;
+    if (q && (code + ' ' + r[1]).toLowerCase().indexOf(q) < 0) continue;
+    var key = r[1] + '|' + r[2] + '|' + motivoSinHilo(code);
+    if (!grupos[key]) { grupos[key] = { nombre: r[1], tipo: r[2], motivo: motivoSinHilo(code), codes: [] }; orden.push(key); }
+    grupos[key].codes.push(code);
+  }
+  if (!orden.length) { body.innerHTML = '<div class="empty">' + (q ? 'Sin coincidencias.' : 'Todas las referencias tienen hilo cargado.') + '</div>'; return; }
+  var h = '<table><thead><tr><th>Producto</th><th>Maquina</th><th>Codigos</th><th>Que falta</th></tr></thead><tbody>';
+  var max = 80;
+  for (var g = 0; g < orden.length && g < max; g++) {
+    var gr = grupos[orden[g]];
+    var lista = gr.codes.length > 4 ? gr.codes.slice(0, 4).join(', ') + ' (+' + (gr.codes.length - 4) + ')' : gr.codes.join(', ');
+    h += '<tr><td class="tit">' + String(gr.nombre).replace(/</g, '&lt;') + '</td><td class="sub">' + (gr.tipo === 's' ? 'Sin costura' : gr.tipo === 'l' ? 'Medias' : 'Otro') + '</td><td class="lote-tag">' + lista + '</td><td class="sub">' + gr.motivo + '</td></tr>';
+  }
+  h += '</tbody></table>';
+  if (orden.length > max) h += '<div class="sub" style="margin-top:.5rem">Se muestran ' + max + ' de ' + orden.length + ' productos. Use el buscador o descargue la lista completa.</div>';
+  body.innerHTML = h;
+}
+function cobDescargar() {
+  var lines = [['Codigo', 'Nombre', 'Maquina', 'Tubos por docena', 'Min por docena', 'Estado de hilo']];
+  for (var i = 0; i < REFS_PROD.length; i++) {
+    var r = REFS_PROD[i], c = String(r[0]).toUpperCase();
+    lines.push([r[0], r[1], r[2] === 's' ? 'Sin costura' : r[2] === 'l' ? 'Medias' : 'Otro', r[3], r[4], motivoSinHilo(c)]);
+  }
+  var csv = '﻿' + lines.map(function (l) {
+    return l.map(function (x) { return '"' + String(x).replace(/"/g, '""') + '"'; }).join(';');
+  }).join('\r\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'referencias_cobertura_hilo.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// ============================================================
+// RECIBO DE HILO: foto del rotulo -> fila de la planilla F10-P-PRH-004
+// - Catalogo (lote -> item S/Z): el mismo de las fichas de precosteo
+//   (HILOS_DB) + las fibras de las fichas cargadas desde Firestore.
+// - Lectura de la foto: Apps Script (doPost, accion leer_rotulo) -> Qwen-VL.
+// - Las filas se guardan por dia en Firestore (doc RECIBO-AAAA-MM-DD en
+//   la coleccion fichas), asi el enconador las toma en el celular y la
+//   secretaria las exporta desde el computador.
+// ============================================================
+var CAT_BASE = [
+  ['Nylon Tex','Nylon TEX 70/68','DJC706830','9451','9452'],
+  ['Nylon Tex','Nylon TEX 40/34','DFE403439','9453','9454'],
+  ['Nylon Tex','Nylon 100/96','DFE1009636','9445','9446'],
+  ['Nylon Tex','Nylon 40/34 - 50/72','04-224','7091','7092'],
+  ['Nylon Tex','Nylon 22/7 TX','DFE20718','9457','9458'],
+  ['Nylon Tex','Nylon 44/12 TX','DFE401219','9449','9450'],
+  ['Nylon Tex','Nylon 70/68/2','04-215','9451','9452'],
+  ['Nylon Tex','Nylon 70/68/2','5565','9451','9452'],
+  ['Nylon Tex','Nylon Body Fresh 40/40','BF40001','BF001',''],
+  ['Nylon Rig','Nylon Rigido 70/68','FJB706806','2215',''],
+  ['Nylon Rig','Nylon Rigido 40/34','FJE403405','9784',''],
+  ['Nylon Rig','Nylon Rig Tilobal 70/48B','FJC704820','9748',''],
+  ['Nylon Rig','Nylon 20/7 Rigido','FJE20728','2125',''],
+  ['Lycra','Lycra 22-22-7','OS-958','6085','6086'],
+  ['Lycra','Lycra 22-22-7','OS-973','2377','2378'],
+  ['Lycra','Lycra 22-22-7','OS-974','2379','2380'],
+  ['Lycra','Lycra 22-40-34','OS-981','6056','6057'],
+  ['Lycra','Lycra 22-40-34','OS-978','2414','2415'],
+  ['Lycra','Lycra 22-70-68','OS-969','9545','9546'],
+  ['Lycra','Lycra 78-22-7','OS-972','5899','6532'],
+  ['Lycra','Lycra 40-22-7','OS-934','1114','1115'],
+  ['Lycra','Lycra 140-70-68','OS-980','9564','9565'],
+  ['Lycra','Spandex 140','09609','2142',''],
+  ['Lycra','Lycra 17-8-5','OS-954','5243','5244'],
+  ['Lycra','Lycra 17-8-5','OS-961','5243','5244'],
+  ['Lycra','Lycra 20-8-5','OS-963','4590','4591'],
+  ['Lycra','Spandex 15','C2167G','2138',''],
+  ['Poliester','Poliester 50/72','YD77001','9515',''],
+  ['Poliester','Poliester 75D/72','7572Q559','9516',''],
+  ['Modal','Nm 40/1','1861472','9264','9264']
+];
+
+var RECIBO = { fecha: '', rows: {}, unsub: null };
+var RECQ = [], recBusy = false, recTotal = 0, recHechas = 0, recErrs = 0;
+var RECFOTOS = {};
+var _recPend = false, _recRendering = false;
+
+function recFechaLocal(d) {
+  d = d || new Date();
+  var m = d.getMonth() + 1, dd = d.getDate();
+  return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (dd < 10 ? '0' + dd : dd);
+}
+function recEsc(v) {
+  return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function toNumRec(v) {
+  if (v == null || v === '') return null;
+  if (typeof v === 'number') return isNaN(v) ? null : v;
+  var s = String(v).replace(',', '.').replace(/[^0-9.\-]/g, '');
+  if (!s || s === '.' || s === '-') return null;
+  var n = parseFloat(s);
+  return isNaN(n) ? null : n;
+}
+function round2(n) { return Math.round(n * 100) / 100; }
+function limpiaTxt(v) { return v == null ? '' : String(v).trim(); }
+
+// ---------- Catalogo ----------
+function normLoteOS(s) {
+  s = String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  // En los rotulos a mano la "O" y el "0" de OS-954 / 05-954 se confunden: se tratan igual
+  return s.replace(/^(05|0S|O5)/, 'OS');
+}
+function getCatalogo() {
+  var out = [], seen = {};
+  function add(tipo, titulo, lote, iS, iZ) {
+    iS = limpiaTxt(iS); iZ = limpiaTxt(iZ);
+    if (!iS && !iZ) return;
+    var k = normLoteOS(lote) + '|' + iS + '|' + iZ + '|' + limpiaTxt(titulo);
+    if (seen[k]) return;
+    seen[k] = 1;
+    out.push({ tipo: tipo || '', titulo: titulo || '', lote: lote || '', itemS: iS, itemZ: iZ });
+  }
+  for (var i = 0; i < CAT_BASE.length; i++) {
+    var b = CAT_BASE[i];
+    add(b[0], b[1], b[2], b[3], b[4]);
+  }
+  var codes = Object.keys(MATERIALES);
+  for (var j = 0; j < codes.length; j++) {
+    var fib = MATERIALES[codes[j]].fibras || [];
+    for (var k = 0; k < fib.length; k++) {
+      var f = fib[k];
+      add(f.nombre, f.titulo, f.lote, f.itemS, f.itemZ);
+    }
+  }
+  return out;
+}
+function itemPara(c, t) {
+  if (!c) return '';
+  if (!c.itemZ || c.itemZ === c.itemS) return c.itemS;
+  if (t === 'S') return c.itemS;
+  if (t === 'Z') return c.itemZ;
+  return '';
+}
+function uniqPares(lista) {
+  var seen = {}, out = [];
+  for (var i = 0; i < lista.length; i++) {
+    var k = lista[i].itemS + '|' + lista[i].itemZ;
+    if (!seen[k]) { seen[k] = 1; out.push(lista[i]); }
+  }
+  return out;
+}
+// Busca en el catalogo por lote. Lotes cortos: solo coincidencia exacta.
+// Lotes largos (7+ caracteres): el rotulo del proveedor puede traer sufijos
+// (DFE401219SS-C -> DFE401219), asi que se acepta que empiece igual.
+function buscarCatalogo(loteRaw) {
+  var L = normLoteOS(loteRaw);
+  if (!L) return [];
+  var cat = getCatalogo(), exact = [], pref = [];
+  for (var i = 0; i < cat.length; i++) {
+    var cl = normLoteOS(cat[i].lote);
+    if (!cl) continue;
+    if (cl === L) exact.push(cat[i]);
+    else if (cl.length >= 7 && L.indexOf(cl) === 0) pref.push(cat[i]);
+  }
+  return exact.length ? exact : pref;
+}
+function recBuscarPorTitulo(titulo) {
+  var g = String(titulo || '').match(/\d+/g);
+  if (!g || g.length < 2) return null;
+  var key = g.join('-');
+  var cat = getCatalogo(), hit = [];
+  for (var i = 0; i < cat.length; i++) {
+    if (cat[i].tipo !== 'Lycra') continue;
+    var cg = String(cat[i].titulo).match(/\d+/g);
+    if (cg && cg.join('-') === key) hit.push(cat[i]);
+  }
+  hit = uniqPares(hit);
+  return hit.length === 1 ? hit[0] : null;
+}
+function catPorItem(item) {
+  item = limpiaTxt(item);
+  if (!item) return null;
+  var cat = getCatalogo();
+  for (var i = 0; i < cat.length; i++) {
+    var c = cat[i];
+    if (c.itemS === item || c.itemZ === item) {
+      var t = '';
+      if (c.itemZ && c.itemZ !== c.itemS) t = (c.itemS === item) ? 'S' : 'Z';
+      return { c: c, t: t };
+    }
+  }
+  return null;
+}
+function recResolverItem(r) {
+  var m = uniqPares(buscarCatalogo(r.lote));
+  if (m.length === 1) {
+    r.desc = m[0].titulo;
+    r.item = itemPara(m[0], r.torsion);
+    r.itemAuto = true;
+  } else if (!r.itemAuto) {
+    r.item = r.item || '';
+  } else {
+    r.item = '';
+  }
+}
+
+// ---------- Filas ----------
+function recNuevoId() { return 'r' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36); }
+function recFilaVacia(fuente) {
+  return { id: recNuevoId(), ts: Date.now(), item: '', desc: '', caja: '', lote: '', unidades: null, neto: null, bruto: null, tara: null, torsion: '', ibm: false, fuente: fuente || 'manual', itemAuto: false, dudas: [] };
+}
+function recFilaDeLectura(d) {
+  d = d || {};
+  var r = recFilaVacia('foto');
+  var du = {}, dd = d.dudas || [];
+  var mapa = { peso_neto: 'neto', peso_bruto: 'bruto', tara: 'tara' };
+  for (var i = 0; i < dd.length; i++) du[mapa[dd[i]] || dd[i]] = 1;
+  r.lote = limpiaTxt(d.lote);
+  r.unidades = toNumRec(d.unidades);
+  r.neto = toNumRec(d.peso_neto);
+  r.bruto = toNumRec(d.peso_bruto);
+  r.tara = toNumRec(d.tara);
+  var t = limpiaTxt(d.torsion).toUpperCase();
+  r.torsion = (t === 'S' || t === 'Z') ? t : '';
+  r.caja = limpiaTxt(d.caja).replace(/\s+/g, '');
+  if (r.neto !== null) r.neto = round2(r.neto);
+  if (r.neto === null && r.bruto !== null && r.tara !== null) r.neto = round2(r.bruto - r.tara);
+  // Control cruzado: neto = bruto - tara (rotulos a mano)
+  if (r.neto !== null && r.bruto !== null && r.tara !== null && Math.abs(r.bruto - r.tara - r.neto) > 0.06) du.neto = 1;
+  recResolverItem(r);
+  if (!r.item) {
+    var c = recBuscarPorTitulo(d.titulo);
+    if (c) {
+      r.item = itemPara(c, r.torsion);
+      r.desc = c.titulo;
+      r.itemAuto = true;
+      du.lote = 1; // el item salio por titulo y no por lote: confirmar
+    }
+  }
+  if (!r.desc) r.desc = limpiaTxt(d.titulo) || limpiaTxt(d.especificacion);
+  r.dudas = Object.keys(du);
+  return r;
+}
+function recTorsionRequerida(r) {
+  if (!r.item) return true;
+  var h = catPorItem(r.item);
+  if (!h) return false;
+  return !!(h.c.itemZ && h.c.itemZ !== h.c.itemS && !h.t);
+}
+function recFlags(r) {
+  var f = {}, du = r.dudas || [];
+  if (!r.item) f.item = 1;
+  if (!r.caja) f.caja = 1;
+  if (!r.lote) f.lote = 1;
+  if (r.unidades === null || r.unidades === undefined) f.unidades = 1;
+  if (r.neto === null || r.neto === undefined) f.neto = 1;
+  if (!r.torsion && recTorsionRequerida(r)) f.torsion = 1;
+  for (var i = 0; i < du.length; i++) f[du[i]] = 1;
+  return f;
+}
+function recFlagCount(r) { return Object.keys(recFlags(r)).length; }
+
+// ---------- Persistencia ----------
+function recDocId() { return 'RECIBO-' + RECIBO.fecha; }
+function recLocalKey() { return 'hilos_recibo_' + RECIBO.fecha; }
+function recLocalSave() {
+  try { localStorage.setItem(recLocalKey(), JSON.stringify(RECIBO.rows)); } catch (e) {}
+}
+function recLocalLoad() {
+  try { var raw = localStorage.getItem(recLocalKey()); return raw ? JSON.parse(raw) : {}; } catch (e) { return {}; }
+}
+function recStatus(msg, bad) {
+  var el = document.getElementById('rec-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = bad ? '#f59e0b' : '#64748b';
+  var c2 = document.getElementById('rec-cam-st');
+  if (c2) { c2.textContent = msg; c2.style.color = bad ? '#fbbf24' : '#94a3b8'; }
+}
+function recGuardar(r) {
+  RECIBO.rows[r.id] = r;
+  recLocalSave();
+  var db = initFichasFirebase();
+  if (!db) return;
+  var rows = {};
+  rows[r.id] = JSON.parse(JSON.stringify(r));
+  db.collection('fichas').doc(recDocId()).set({ tipo: 'recibo_hilo', fecha: RECIBO.fecha, updatedAt: Date.now(), rows: rows }, { merge: true })
+    .catch(function (e) { recStatus('No se pudo guardar en la nube (' + e.message + '). Queda guardado en este dispositivo.', true); });
+}
+function recDel(id) {
+  if (!RECIBO.rows[id]) return;
+  if (!confirm('Eliminar esta caja de la planilla?')) return;
+  delete RECIBO.rows[id];
+  delete RECFOTOS[id];
+  recLocalSave();
+  var db = initFichasFirebase();
+  if (db) {
+    db.collection('fichas').doc(recDocId()).update('rows.' + id, firebase.firestore.FieldValue.delete())
+      .catch(function (e) { console.warn('No se pudo borrar en la nube', e); });
+  }
+  renderRecibo();
+}
+function recEscuchar() {
+  if (RECIBO.unsub) { try { RECIBO.unsub(); } catch (e) {} RECIBO.unsub = null; }
+  RECIBO.rows = recLocalLoad();
+  renderRecibo();
+  var db = initFichasFirebase();
+  if (!db) { recStatus('Sin conexion a la nube: las filas se guardan solo en este dispositivo.', true); return; }
+  var fechaEscucha = RECIBO.fecha;
+  RECIBO.unsub = db.collection('fichas').doc(recDocId()).onSnapshot(function (doc) {
+    if (fechaEscucha !== RECIBO.fecha) return;
+    var d = doc.exists ? (doc.data() || {}) : {};
+    var remoto = d.rows || {};
+    if (doc.exists || !Object.keys(RECIBO.rows).length) RECIBO.rows = remoto;
+    recLocalSave();
+    if (recEnEdicion()) { _recPend = true; } else { renderRecibo(); }
+  }, function (err) {
+    console.warn('Recibo: error escuchando', err);
+    recStatus('No se pudo leer de la nube (' + err.message + '). Se usa lo guardado en este dispositivo.', true);
+  });
+}
+function recEnEdicion() {
+  var a = document.activeElement;
+  var body = document.getElementById('rec-body');
+  return !!(a && body && body.contains(a) && (a.tagName === 'INPUT' || a.tagName === 'SELECT'));
+}
+function recCambiarFecha(v) {
+  if (!v) return;
+  RECIBO.fecha = v;
+  recEscuchar();
+}
+
+// ---------- Edicion ----------
+function recSet(id, campo, val) {
+  var r = RECIBO.rows[id];
+  if (!r) return;
+  var num = (campo === 'unidades' || campo === 'neto' || campo === 'bruto' || campo === 'tara');
+  if (campo === 'ibm') r.ibm = !!val;
+  else if (num) { r[campo] = toNumRec(val); if (campo === 'neto' && r.neto !== null) r.neto = round2(r.neto); }
+  else if (campo === 'torsion') r.torsion = limpiaTxt(val).toUpperCase();
+  else r[campo] = limpiaTxt(val);
+  if (campo === 'caja') r.caja = r.caja.replace(/\s+/g, '');
+  r.dudas = (r.dudas || []).filter(function (x) { return x !== campo; });
+  if (campo === 'item') {
+    r.itemAuto = false;
+    var h = catPorItem(r.item);
+    if (h) { r.desc = h.c.titulo; if (h.t) r.torsion = h.t; }
+  } else if ((campo === 'lote' || campo === 'torsion') && (r.itemAuto || !r.item)) {
+    recResolverItem(r);
+  }
+  recGuardar(r);
+  renderRecibo();
+}
+function recAddManual() {
+  var r = recFilaVacia('manual');
+  recGuardar(r);
+  renderRecibo();
+}
+function recMarcarTodas() {
+  var ids = Object.keys(RECIBO.rows);
+  if (!ids.length) return;
+  if (!confirm('Marcar las ' + ids.length + ' cajas de esta fecha como ya pasadas a IBM?')) return;
+  for (var i = 0; i < ids.length; i++) { RECIBO.rows[ids[i]].ibm = true; recGuardar(RECIBO.rows[ids[i]]); }
+  renderRecibo();
+}
+function recVerFoto(id) {
+  var b = RECFOTOS[id];
+  if (!b) { recStatus('La foto solo se conserva en el celular que la tomo, mientras la pagina siga abierta.', true); return; }
+  window.open(URL.createObjectURL(b), '_blank');
+}
+
+// ---------- Pantalla ----------
+function recCelda(r, campo, fl, valor, extra) {
+  return '<td' + (fl[campo] ? ' class="falta"' : '') + '><input type="text" data-id="' + r.id + '" data-f="' + campo + '" value="' + recEsc(valor) + '"' + (extra || '') + '></td>';
+}
+function renderRecibo() {
+  var body = document.getElementById('rec-body');
+  if (!body) return;
+  _recPend = false;
+  _recRendering = true;
+  try { renderReciboInner(body); } finally { _recRendering = false; }
+}
+function renderReciboInner(body) {
+  var dl = document.getElementById('cat-items');
+  var catN = getCatalogo();
+  if (dl && dl.getAttribute('data-n') !== String(catN.length)) {
+    var cat = catN, seen = {}, o = '';
+    for (var q = 0; q < cat.length; q++) {
+      var c = cat[q];
+      var pares = [[c.itemS, c.itemZ && c.itemZ !== c.itemS ? ' S' : ''], [c.itemZ && c.itemZ !== c.itemS ? c.itemZ : '', ' Z']];
+      for (var w = 0; w < pares.length; w++) {
+        if (!pares[w][0]) continue;
+        var kk = pares[w][0] + '|' + c.titulo;
+        if (seen[kk]) continue;
+        seen[kk] = 1;
+        o += '<option value="' + recEsc(pares[w][0]) + '">' + recEsc(c.titulo + pares[w][1]) + '</option>';
+      }
+    }
+    dl.innerHTML = o;
+    dl.setAttribute('data-n', String(catN.length));
+  }
+  var ids = Object.keys(RECIBO.rows).sort(function (a, b) { return (RECIBO.rows[a].ts || 0) - (RECIBO.rows[b].ts || 0); });
+  var faltan = 0;
+  if (!ids.length) {
+    body.innerHTML = '<div class="empty">Sin cajas registradas para esta fecha. Tome la foto de un rotulo para empezar.</div>';
+    document.getElementById('rec-aviso').textContent = '';
+    recResumen();
+    return;
+  }
+  var html = '<div style="overflow-x:auto"><table class="rec-t"><thead><tr><th>#</th><th>Item</th><th>Descripcion</th><th>Caja #</th><th>Lote</th><th>Unid.</th><th>Peso neto</th><th>Torsion</th><th title="Ya pasada a IBM">IBM</th><th></th></tr></thead><tbody>';
+  for (var i = 0; i < ids.length; i++) {
+    var r = RECIBO.rows[ids[i]];
+    var fl = recFlags(r);
+    if (Object.keys(fl).length) faltan++;
+    html += '<tr>';
+    html += '<td class="sub">' + (i + 1) + '</td>';
+    html += recCelda(r, 'item', fl, r.item, ' list="cat-items" inputmode="numeric"');
+    html += recCelda(r, 'desc', {}, r.desc);
+    html += recCelda(r, 'caja', fl, r.caja, ' inputmode="numeric"');
+    html += recCelda(r, 'lote', fl, r.lote);
+    html += recCelda(r, 'unidades', fl, r.unidades === null || r.unidades === undefined ? '' : r.unidades, ' inputmode="numeric"');
+    html += recCelda(r, 'neto', fl, r.neto === null || r.neto === undefined ? '' : r.neto, ' inputmode="decimal"');
+    html += '<td' + (fl.torsion ? ' class="falta"' : '') + '><select data-id="' + r.id + '" data-f="torsion">' +
+      '<option value=""' + (!r.torsion ? ' selected' : '') + '></option>' +
+      '<option value="S"' + (r.torsion === 'S' ? ' selected' : '') + '>S</option>' +
+      '<option value="Z"' + (r.torsion === 'Z' ? ' selected' : '') + '>Z</option></select></td>';
+    html += '<td style="text-align:center"><input type="checkbox" data-id="' + r.id + '" data-f="ibm"' + (r.ibm ? ' checked' : '') + '></td>';
+    html += '<td style="white-space:nowrap">' +
+      (RECFOTOS[r.id] ? '<button class="rec-ph" data-act="foto" data-id="' + r.id + '" title="Ver la foto">&#128247;</button>' : '') +
+      '<button class="rec-btn-x" data-act="del" data-id="' + r.id + '" title="Eliminar">&#10005;</button></td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table></div>';
+  body.innerHTML = html;
+  var av = document.getElementById('rec-aviso');
+  av.textContent = faltan ? (faltan + ' de ' + ids.length + ' filas tienen datos por completar o confirmar (celdas amarillas).') : 'Todas las filas estan completas.';
+  av.style.color = faltan ? '#fbbf24' : '#10b981';
+  recResumen();
+}
+function recOrdenadas() {
+  var arr = [];
+  for (var k in RECIBO.rows) if (RECIBO.rows.hasOwnProperty(k)) arr.push(RECIBO.rows[k]);
+  arr.sort(function (a, b) {
+    var ia = a.item || '~', ib = b.item || '~';
+    var na = parseInt(ia, 10), nb = parseInt(ib, 10);
+    if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+    if (ia !== ib) return ia < ib ? -1 : 1;
+    var ca = a.caja || '', cb = b.caja || '';
+    if (ca !== cb) return ca < cb ? -1 : 1;
+    return (a.ts || 0) - (b.ts || 0);
+  });
+  return arr;
+}
+function recResumen() {
+  var el = document.getElementById('rec-resumen');
+  if (!el) return;
+  var arr = recOrdenadas();
+  if (!arr.length) { el.innerHTML = ''; return; }
+  var por = {}, orden = [], totC = 0, totU = 0, totK = 0, pend = 0;
+  for (var i = 0; i < arr.length; i++) {
+    var r = arr[i], k = r.item || '(sin item)';
+    if (!por[k]) { por[k] = { item: k, desc: r.desc || '', cajas: 0, unid: 0, kg: 0 }; orden.push(k); }
+    por[k].cajas++; por[k].unid += r.unidades || 0; por[k].kg += r.neto || 0;
+    if (!por[k].desc && r.desc) por[k].desc = r.desc;
+    totC++; totU += r.unidades || 0; totK += r.neto || 0;
+    if (!r.ibm) pend++;
+  }
+  var h = '<div class="card-t" style="font-size:.78rem">Resumen por item (para cuadrar con la requisicion)</div><table><thead><tr><th>Item</th><th>Descripcion</th><th style="text-align:right">Cajas</th><th style="text-align:right">Unidades</th><th style="text-align:right">Kg neto</th></tr></thead><tbody>';
+  for (var j = 0; j < orden.length; j++) {
+    var p = por[orden[j]];
+    h += '<tr><td class="tit">' + recEsc(p.item) + '</td><td class="sub">' + recEsc(p.desc) + '</td><td class="kg">' + p.cajas + '</td><td class="kg">' + p.unid + '</td><td class="kg">' + p.kg.toFixed(2) + '</td></tr>';
+  }
+  h += '<tr class="total-row"><td colspan="2">Total (' + pend + ' cajas pendientes de pasar a IBM)</td><td class="kg">' + totC + '</td><td class="kg">' + totU + '</td><td class="kg">' + totK.toFixed(2) + '</td></tr></tbody></table>';
+  el.innerHTML = h;
+}
+
+// ---------- Foto -> IA ----------
+function recRedimensionar(file, cb) {
+  var url = URL.createObjectURL(file);
+  var img = new Image();
+  img.onload = function () {
+    var max = 1800, w = img.naturalWidth, h = img.naturalHeight;
+    var k = Math.min(1, max / Math.max(w, h));
+    var c = document.createElement('canvas');
+    c.width = Math.round(w * k); c.height = Math.round(h * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(url);
+    var dataUrl = c.toDataURL('image/jpeg', 0.85);
+    c.toBlob(function (b) { cb(null, { dataUrl: dataUrl, blob: b }); }, 'image/jpeg', 0.85);
+  };
+  img.onerror = function () { URL.revokeObjectURL(url); cb(new Error('No se pudo abrir la imagen')); };
+  img.src = url;
+}
+function leerRotuloIA(dataUrl, cb) {
+  if (!GAS_URL) { cb(new Error('Falta conectar con el servidor (icono Conexion de arriba).')); return; }
+  fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'leer_rotulo', imagen: dataUrl }) })
+    .then(function (r) { return r.text(); })
+    .then(function (txt) {
+      var resp;
+      try { resp = JSON.parse(txt); } catch (e) {
+        cb(new Error('El servidor no reconoce la lectura de rotulos. Actualice el Apps Script (guia_google_sheets.html) y redespliegue como Nueva version.'));
+        return;
+      }
+      if (resp.error) { cb(new Error(resp.error + recHintError(resp.error))); return; }
+      cb(null, resp.datos || {});
+    })
+    .catch(function (e) { cb(new Error('Sin respuesta del servidor: ' + e.message)); });
+}
+function recFiles(input) {
+  var files = Array.prototype.slice.call(input.files || []);
+  input.value = '';
+  if (!files.length) return;
+  for (var i = 0; i < files.length; i++) RECQ.push(files[i]);
+  recTotal += files.length;
+  recProcesar();
+}
+function recProcesar() {
+  if (recBusy) return;
+  var f = RECQ.shift();
+  if (!f) {
+    var msg = recHechas + ' foto(s) leidas' + (recErrs ? ', ' + recErrs + ' con error (quedaron como fila en blanco para llenar a mano)' : '') + '. Revise las celdas amarillas.';
+    recStatus(msg, recErrs > 0);
+    recTotal = 0; recHechas = 0; recErrs = 0;
+    return;
+  }
+  recBusy = true;
+  recStatus('Leyendo foto ' + (recHechas + 1) + ' de ' + recTotal + '...');
+  recRedimensionar(f, function (err, res) {
+    function fin(row, blob) {
+      if (blob) RECFOTOS[row.id] = blob;
+      recGuardar(row);
+      renderRecibo();
+      recHechas++;
+      recBusy = false;
+      recProcesar();
+    }
+    if (err) { recErrs++; recStatus(err.message, true); fin(recFilaVacia('foto'), null); return; }
+    leerRotuloIA(res.dataUrl, function (e2, datos) {
+      if (e2) { recErrs++; recStatus(e2.message, true); fin(recFilaVacia('foto'), res.blob); return; }
+      fin(recFilaDeLectura(datos), res.blob);
+    });
+  });
+}
+
+
+function recHintError(m) {
+  m = String(m || '');
+  if (m.indexOf('QWEN_API_KEY') >= 0) return ' -> Guarde la clave en Apps Script: Configuracion del proyecto > Propiedades del script.';
+  if (m.indexOf(' 401') >= 0 || m.indexOf('InvalidApiKey') >= 0 || m.indexOf('invalid_api_key') >= 0) return ' -> La clave no es valida para esa region. Revise QWEN_API_KEY y QWEN_BASE_URL (Singapur/internacional vs China).';
+  if (m.indexOf(' 404') >= 0 || m.toLowerCase().indexOf('model') >= 0) return ' -> El modelo o la URL base no corresponden a su cuenta. Ajuste QWEN_MODEL / QWEN_BASE_URL en las propiedades del script.';
+  if (m.indexOf(' 429') >= 0 || m.toLowerCase().indexOf('quota') >= 0) return ' -> Se agoto el cupo/credito de Qwen o hay demasiadas llamadas seguidas.';
+  if (m.indexOf('Limite diario') >= 0) return ' -> Suba MAX_FOTOS_DIA en las propiedades del script si necesita mas.';
+  return '';
+}
+function recProbarQwen() {
+  var c = document.createElement('canvas');
+  c.width = 900; c.height = 420;
+  var g = c.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = '#000'; g.font = 'bold 44px Arial';
+  g.fillText('LOT NO: DFE401219SS-C', 40, 110);
+  g.fillText('BOBBIN: 6', 40, 200);
+  g.fillText('N.W.: 27.780 KG', 40, 290);
+  g.fillText('G.W.: 30.550 KG', 40, 380);
+  recStatus('Probando conexion con Qwen (usa 1 foto del cupo diario)...');
+  leerRotuloIA(c.toDataURL('image/jpeg', 0.9), function (err, d) {
+    if (err) { recStatus('Prueba fallida: ' + err.message, true); return; }
+    var ok = String(d.lote || '').toUpperCase().replace(/[^A-Z0-9]/g, '') === 'DFE401219SSC' && toNumRec(d.peso_neto) === 27.78;
+    recStatus((ok ? 'Conexion OK. ' : 'Qwen responde, pero leyo distinto a lo esperado. ') + 'Leyo: lote ' + (d.lote || '-') + ', unidades ' + (d.unidades === undefined || d.unidades === null ? '-' : d.unidades) + ', neto ' + (d.peso_neto === undefined || d.peso_neto === null ? '-' : d.peso_neto) + ' (esperado DFE401219SS-C, 6, 27.78).', !ok);
+  });
+}
+
+// ---------- Camara en vivo ----------
+var _camStream = null, _camCount = 0;
+function recAbrirCamara() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    recStatus('Este navegador no permite usar la camara en esta pagina. Use "Elegir de galeria".', true);
+    return;
+  }
+  _camCount = 0;
+  document.getElementById('rec-cam-n').textContent = '';
+  document.getElementById('rec-cam-st').textContent = 'Iniciando camara...';
+  document.getElementById('rec-cam-ov').style.display = 'flex';
+  recIniciarCamara(null);
+}
+function recDetenerCamara() {
+  if (_camStream) {
+    var t = _camStream.getTracks();
+    for (var i = 0; i < t.length; i++) t[i].stop();
+    _camStream = null;
+  }
+}
+function recIniciarCamara(deviceId) {
+  recDetenerCamara();
+  var v = { width: { ideal: 2560 }, height: { ideal: 1440 } };
+  if (deviceId) v.deviceId = { exact: deviceId }; else v.facingMode = { ideal: 'environment' };
+  navigator.mediaDevices.getUserMedia({ video: v, audio: false }).then(function (stream) {
+    _camStream = stream;
+    var el = document.getElementById('rec-video');
+    el.srcObject = stream;
+    var pr = el.play(); if (pr && pr.catch) pr.catch(function () {});
+    document.getElementById('rec-cam-st').textContent = 'Camara lista. Acerque el rotulo hasta que se lea bien y pulse Capturar.';
+    if (navigator.mediaDevices.enumerateDevices) {
+      navigator.mediaDevices.enumerateDevices().then(function (list) {
+        var cams = list.filter(function (d) { return d.kind === 'videoinput'; });
+        var sel = document.getElementById('rec-cam-sel');
+        if (cams.length < 2) { sel.style.display = 'none'; return; }
+        var cur = stream.getVideoTracks()[0] && stream.getVideoTracks()[0].getSettings ? stream.getVideoTracks()[0].getSettings().deviceId : '';
+        var o = '';
+        for (var i = 0; i < cams.length; i++) o += '<option value="' + recEsc(cams[i].deviceId) + '"' + (cams[i].deviceId === cur ? ' selected' : '') + '>' + recEsc(cams[i].label || ('Camara ' + (i + 1))) + '</option>';
+        sel.innerHTML = o;
+        sel.style.display = '';
+      });
+    }
+  }).catch(function (e) {
+    var m = (e && e.name) || '';
+    var msg = m === 'NotAllowedError' ? 'La camara esta bloqueada. Pulse el candado junto a la direccion de la pagina, permita la Camara y vuelva a abrir.' :
+      m === 'NotFoundError' ? 'No se encontro ninguna camara en este equipo.' :
+      m === 'NotReadableError' ? 'La camara esta en uso por otra aplicacion. Cierrela e intente de nuevo.' :
+      'No se pudo abrir la camara (' + (e && e.message ? e.message : m) + ').';
+    document.getElementById('rec-cam-st').textContent = msg;
+    document.getElementById('rec-cam-st').style.color = '#fbbf24';
+  });
+}
+function recCerrarCamara() {
+  recDetenerCamara();
+  document.getElementById('rec-cam-ov').style.display = 'none';
+}
+function recCapturar() {
+  var v = document.getElementById('rec-video');
+  if (!_camStream || !v.videoWidth) { document.getElementById('rec-cam-st').textContent = 'La camara todavia no esta lista.'; return; }
+  var c = document.createElement('canvas');
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+  c.toBlob(function (b) {
+    if (!b) return;
+    var f;
+    try { f = new File([b], 'rotulo.jpg', { type: 'image/jpeg' }); } catch (e) { f = b; }
+    _camCount++;
+    document.getElementById('rec-cam-n').textContent = 'Capturadas: ' + _camCount;
+    RECQ.push(f);
+    recTotal++;
+    recProcesar();
+  }, 'image/jpeg', 0.92);
+}
+document.addEventListener('keydown', function (ev) {
+  var ov = document.getElementById('rec-cam-ov');
+  if (!ov || ov.style.display !== 'flex') return;
+  if (ev.key === 'Escape') { recCerrarCamara(); }
+  else if (ev.key === ' ' || ev.code === 'Space') { ev.preventDefault(); recCapturar(); }
+});
+
+// ---------- Cabecera de la planilla ----------
+function recHdrGet() {
+  return {
+    mov: document.getElementById('rec-h-mov').value,
+    ori: document.getElementById('rec-h-ori').value,
+    des: document.getElementById('rec-h-des').value,
+    num: document.getElementById('rec-h-num').value
+  };
+}
+function recHdrSave() {
+  try { localStorage.setItem('hilos_rec_hdr', JSON.stringify(recHdrGet())); } catch (e) {}
+}
+function recHdrLoad() {
+  try {
+    var h = JSON.parse(localStorage.getItem('hilos_rec_hdr') || '{}');
+    document.getElementById('rec-h-mov').value = h.mov || '';
+    document.getElementById('rec-h-ori').value = h.ori || '';
+    document.getElementById('rec-h-des').value = h.des || '';
+    document.getElementById('rec-h-num').value = h.num || '';
+  } catch (e) {}
+}
+
+// ---------- Exportar ----------
+function recConfirmarFaltantes() {
+  var arr = recOrdenadas(), n = 0;
+  for (var i = 0; i < arr.length; i++) if (recFlagCount(arr[i])) n++;
+  if (!n) return true;
+  return confirm('Hay ' + n + ' filas con datos por completar (celdas amarillas). Exportar de todos modos?');
+}
+function recVacia(r) {
+  return !r.item && !r.caja && !r.lote && (r.unidades === null || r.unidades === undefined) && (r.neto === null || r.neto === undefined);
+}
+function recFilasExport() {
+  var arr = recOrdenadas(), out = [];
+  for (var i = 0; i < arr.length; i++) {
+    var r = arr[i];
+    if (recVacia(r)) continue;
+    out.push([r.item || '', r.desc || '', r.caja || '', r.lote || '',
+      r.unidades === null || r.unidades === undefined ? '' : r.unidades,
+      r.neto === null || r.neto === undefined ? '' : r.neto, r.torsion || '']);
+  }
+  return out;
+}
+function recDescargarCsv() {
+  var h = recHdrGet(), rows = recFilasExport();
+  var lines = [['F10-P-PRH-004 ENTRADA Y SALIDA DE MATERIALES'], ['Fecha', RECIBO.fecha, 'Movimiento', h.mov, 'Origen', h.ori, 'Destino', h.des, 'Numero', h.num], [],
+    ['ITEM', 'DESCRIPCION', 'CAJA #', 'LOTE', 'UNIDADES', 'PESO NETO', 'TORSION']].concat(rows);
+  var csv = '﻿' + lines.map(function (l) {
+    return l.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(';');
+  }).join('\r\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'recibo_hilo_' + RECIBO.fecha + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+function recDescargarExcel() {
+  if (!Object.keys(RECIBO.rows).length) { recStatus('No hay filas para exportar.', true); return; }
+  if (!recConfirmarFaltantes()) return;
+  function generar() {
+    var h = recHdrGet(), rows = recFilasExport();
+    var aoa = [['F10-P-PRH-004 ENTRADA Y SALIDA DE MATERIALES'], ['Fecha', RECIBO.fecha, 'Movimiento', h.mov, 'Origen', h.ori, 'Destino', h.des, 'Numero', h.num], [],
+      ['ITEM', 'DESCRIPCION', 'CAJA #', 'LOTE', 'UNIDADES', 'PESO NETO', 'TORSION']].concat(rows);
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{ wch: 10 }, { wch: 26 }, { wch: 12 }, { wch: 16 }, { wch: 10 }, { wch: 11 }, { wch: 9 }];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Planilla');
+    XLSX.writeFile(wb, 'recibo_hilo_' + RECIBO.fecha + '.xlsx');
+  }
+  if (window.XLSX) { generar(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload = generar;
+  s.onerror = function () { recStatus('No se pudo cargar el generador de Excel; se descarga en CSV (abre en Excel).', true); recDescargarCsv(); };
+  document.head.appendChild(s);
+}
+function recCopiar() {
+  var rows = recFilasExport();
+  if (!rows.length) { recStatus('No hay filas para copiar.', true); return; }
+  if (!recConfirmarFaltantes()) return;
+  var tsv = rows.map(function (r) { return r.join('\t'); }).join('\n');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(tsv).then(function () { recStatus(rows.length + ' filas copiadas. Pegue en Excel o donde las necesite.'); })
+      .catch(function () { recStatus('El navegador no permitio copiar. Use Descargar Excel.', true); });
+  } else { recStatus('El navegador no permite copiar. Use Descargar Excel.', true); }
+}
+function recImprimir() {
+  var arr = recOrdenadas();
+  if (!arr.length) { recStatus('No hay filas para imprimir.', true); return; }
+  var h = recHdrGet();
+  var rows = '', prev = null;
+  for (var i = 0; i < arr.length; i++) {
+    var r = arr[i];
+    if (recVacia(r)) continue;
+    var nuevo = (r.item || '') !== prev;
+    prev = r.item || '';
+    rows += '<tr' + (nuevo ? ' class="g"' : '') + '><td>' + (nuevo ? recEsc(r.item) : '') + '</td><td>' + (nuevo ? recEsc(r.desc) : '') + '</td><td>' + recEsc(r.caja) + '</td><td>' + recEsc(r.lote) + '</td><td class="n">' + recEsc(r.unidades === null || r.unidades === undefined ? '' : r.unidades) + '</td><td class="n">' + recEsc(r.neto === null || r.neto === undefined ? '' : r.neto) + '</td><td class="c">' + recEsc(r.torsion) + '</td></tr>';
+  }
+  var w = window.open('', '_blank');
+  if (!w) { recStatus('El navegador bloqueo la ventana de impresion. Permita ventanas emergentes.', true); return; }
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>F10-P-PRH-004 ' + recEsc(RECIBO.fecha) + '</title><style>' +
+    'body{font-family:Arial,sans-serif;font-size:12px;margin:18px}h1{font-size:15px;text-align:center;margin:0 0 8px}' +
+    '.hd{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px}.hd span{border-bottom:1px solid #000;min-width:110px;display:inline-block;padding:0 4px}' +
+    'table{border-collapse:collapse;width:100%}th,td{border:1px solid #000;padding:3px 5px}th{background:#eee;font-size:11px}' +
+    'td.n{text-align:right}td.c{text-align:center}tr.g td{border-top:2px solid #000}' +
+    '</style></head><body><h1>F10-P-PRH-004 &mdash; ENTRADA Y SALIDA DE MATERIALES</h1><div class="hd">' +
+    '<div>Fecha: <span>' + recEsc(RECIBO.fecha) + '</span></div><div>Movimiento: <span>' + recEsc(h.mov) + '</span></div><div>Origen: <span>' + recEsc(h.ori) + '</span></div><div>Destino: <span>' + recEsc(h.des) + '</span></div><div>Numero: <span>' + recEsc(h.num) + '</span></div></div>' +
+    '<table><thead><tr><th>ITEM</th><th>DESCRIPCION</th><th>CAJA #</th><th>LOTE</th><th>UNIDADES</th><th>PESO NETO</th><th>TORSION</th></tr></thead><tbody>' + rows + '</tbody></table></body></html>');
+  w.document.close();
+  w.focus();
+  setTimeout(function () { w.print(); }, 300);
+}
+
+// ---------- Inicio del modulo ----------
+function recInit() {
+  RECIBO.fecha = recFechaLocal();
+  if (navigator.maxTouchPoints > 0 && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    var nb = document.getElementById('rec-btn-nat'); if (nb) nb.style.display = '';
+  }
+  var fe = document.getElementById('rec-fecha');
+  if (fe) fe.value = RECIBO.fecha;
+  recHdrLoad();
+  var body = document.getElementById('rec-body');
+  body.addEventListener('change', function (ev) {
+    var t = ev.target;
+    if (_recRendering) return;
+    var id = t.getAttribute && t.getAttribute('data-id');
+    var f = t.getAttribute && t.getAttribute('data-f');
+    if (!id || !f) return;
+    recSet(id, f, f === 'ibm' ? t.checked : t.value);
+  });
+  body.addEventListener('click', function (ev) {
+    var t = ev.target;
+    var a = t.getAttribute && t.getAttribute('data-act');
+    if (!a) return;
+    var id = t.getAttribute('data-id');
+    if (a === 'del') recDel(id);
+    else if (a === 'foto') recVerFoto(id);
+  });
+  body.addEventListener('focusout', function () {
+    setTimeout(function () { if (_recPend && !recEnEdicion()) renderRecibo(); }, 80);
+  });
+  recEscuchar();
+}
+
+// ============================================================
+// INICIO
+// ============================================================
+var cachedMats = loadMaterialesCache();
+if (cachedMats) { MATERIALES = cachedMats; fillPedidoDatalist(); }
+recInit();
+renderCobertura();
+syncMateriales(function() {
+  renderRecibo();
+  if (GAS_URL) { cargarCorriendo(); cargarConsumoHoy(); }
+});
+</script>
+
+</body>
+</html>

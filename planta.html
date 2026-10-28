@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gestión Fábrica - Planta virtual</title>
+<meta name="theme-color" content="#0f2942">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--t:50px}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#1b2733;color:#e5e9ee;min-height:100vh}
+header{background:#0f2942;padding:10px 14px;position:sticky;top:0;z-index:10;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+header h1{font-size:16px;font-weight:700}
+.kp{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.k{font-size:12px;padding:4px 10px;border-radius:20px;font-weight:700}
+.k.run{background:#064e3b;color:#6ee7b7}.k.stop{background:#7f1d1d;color:#fecaca}.k.free{background:#334155;color:#cbd5e1}.k.mnt{background:#78350f;color:#fde68a}
+.zb button{width:34px;height:34px;border-radius:8px;border:0;background:#1e3a5f;color:#fff;font-size:18px;cursor:pointer;margin-left:4px}
+.net{font-size:11px;color:#8ea3b8;width:100%}
+.scroll{overflow:auto;padding:14px;-webkit-overflow-scrolling:touch}
+.plant{display:flex;flex-direction:column;gap:0;min-width:max-content;background:#243545;border:3px solid #3b5068;border-radius:10px}
+.erow.bodega{background:#2b2411}
+.erow.bodega .lc{background:#3a2f12;border-right-color:#b8921e}
+.erow.bodega .rm{color:#fcd34d}
+.erow.bodega .aisle .go{background:#b8921e;color:#111 !important;font-weight:700;padding:3px 10px;border-radius:6px;text-decoration:none;font-size:11.5px}
+.erow.bodega .aisle{background:repeating-linear-gradient(90deg,#4a3c17 0 16px,#413415 16px 32px)}
+.est{height:calc(var(--t)*1.25);flex-shrink:0;background:#1d2733;border:2px solid #8595a8;border-radius:2px;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;padding:4px 6px;position:relative}
+.est::before,.est::after{content:'';position:absolute;top:-2px;bottom:-2px;width:4px;background:linear-gradient(#aab6c4,#67798d);border-radius:2px}
+.est::before{left:-2px}.est::after{right:-2px}
+.est .lv{display:flex;gap:3px;flex:1;border-bottom:4px solid #8595a8;padding-bottom:2px;align-items:flex-end;position:relative}
+.est .lv:last-child{border-bottom:0;padding-bottom:0}
+.est .lv i{flex:1;height:85%;border-radius:1px;border:1px solid #6b4423;background:linear-gradient(#d2a062,#b17c3e);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.est .lv i:nth-child(2){background:linear-gradient(#c08a4e,#9d6a2f);height:95%}
+.est .lv i:nth-child(3){background:linear-gradient(#e0b47a,#c08a4e);height:76%}
+.est.pal{border-style:dashed;border-color:#6b7d91;background:#1a2330}
+.est.pal::before,.est.pal::after{display:none}
+.est.pal .lv{flex:0 0 28%;border-bottom:0;gap:3px}
+.est.pal .lv i{height:100%;border-radius:2px}
+.est.pal .pl{flex:0 0 8px;background:repeating-linear-gradient(90deg,#8a6f22 0 7px,transparent 7px 11px);border-radius:1px}
+.rm.aco{position:relative;align-items:flex-start;padding-top:6px}
+.pila{position:absolute;left:4px;right:4px;bottom:4px;display:flex;flex-wrap:wrap-reverse;align-content:flex-start;gap:2px;justify-content:center}
+.cjr{width:13px;height:10px;border-radius:1px;background:linear-gradient(#ef4444,#b91c1c);border:1px solid #7f1d1d;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.wk.pla{width:54px;margin-left:-27px}.wk.pla svg{width:54px;height:36px;animation:none}
+.wk.pla.go svg{animation:fk .45s ease-in-out infinite}
+.cr .bx1,.cr .bx2,.cr .bx3{opacity:0;transition:opacity .2s}
+.cr.c1 .bx1,.cr.c2 .bx1,.cr.c3 .bx1{opacity:1}
+.cr.c2 .bx2,.cr.c3 .bx2{opacity:1}
+.cr.c3 .bx3{opacity:1}
+.fk .bx{opacity:0;transition:opacity .25s}
+.fk.load .bx{opacity:1}
+.bodrow{display:flex;align-items:center;gap:16px;padding:14px 18px;background:#3a2f12;border-bottom:3px solid #b8921e;color:#fcd34d;font-size:15px}
+.bodrow span{color:#d6c48a;font-size:12.5px}.bodrow a{margin-left:auto;background:#b8921e;color:#111;font-weight:700;font-size:13px;padding:8px 12px;border-radius:8px;text-decoration:none}
+.pw{position:relative;min-width:max-content}
+.wk{position:absolute;width:34px;margin:-44px 0 0 -17px;z-index:6;cursor:pointer;display:flex;flex-direction:column;align-items:center;transition:left var(--d,1s) linear,top var(--d,1s) linear}
+.wk svg{width:30px;height:30px}.wk.go svg{animation:wk .35s linear infinite}
+.wk.enc{width:52px;margin-left:-26px}.wk.enc svg{width:52px;height:34px;animation:none}
+.wk.enc.go svg{animation:fk .5s ease-in-out infinite}
+@keyframes fk{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+.wk span{font-size:9px;line-height:1;color:#fff;background:rgba(15,23,42,.8);padding:1px 4px;border-radius:6px;white-space:nowrap;margin-top:1px}
+.wk .bb{position:absolute;top:-12px;font-size:13px}
+.dec{display:flex;gap:10px;justify-content:center;margin-bottom:3px}
+.mc{display:flex;flex-direction:column;align-items:center;gap:2px}
+.mc .ch{display:flex;gap:8px}.mc .ch i{width:9px;height:7px;border-radius:3px;background:#5b6b7c}
+.mc .tb{width:42px;height:16px;border-radius:3px;background:#8a6a45;border:1px solid #a98457}
+.bn{display:flex;flex-direction:column;align-items:center}
+.bn .tl{font-size:11px;line-height:1;letter-spacing:1px;min-height:12px}
+.bn .tb{width:54px;height:13px;border-radius:2px;background:#6b7a8a;border:1px solid #8ea0b3;box-shadow:0 3px 0 #3f4b58}
+.ofj{position:relative;width:250px;height:92px}
+.ofj .per{position:absolute;left:105px;top:6px;width:40px;animation:nod 4s ease-in-out infinite}
+.ofj .per svg{width:40px;height:40px}
+.ofj .esc{position:absolute;left:10px;top:44px;width:230px;height:22px;background:#6b4a2b;border:2px solid #8b6540;border-radius:3px;box-shadow:0 3px 0 #3a2814}
+.ofj .ret{position:absolute;left:212px;top:44px;width:30px;height:46px;background:#6b4a2b;border:2px solid #8b6540;border-radius:3px;box-shadow:0 3px 0 #3a2814}
+.pc{position:absolute;top:22px;width:34px;height:24px;border-radius:2px;border:2px solid #1e3a8a;background:linear-gradient(135deg,#3b82f6,#1e40af);animation:glow 2.4s ease-in-out infinite}
+.pc::after{content:'';position:absolute;left:4px;right:4px;top:5px;height:2px;background:#bfdbfe;box-shadow:0 5px 0 #93c5fd,0 10px 0 #bfdbfe}
+@keyframes glow{50%{filter:brightness(1.35)}}
+@keyframes nod{0%,100%{transform:translateY(0)}45%{transform:translateY(2px) rotate(-3deg)}55%{transform:translateY(2px) rotate(3deg)}}
+.ji{position:relative;width:78px;height:62px;cursor:pointer}
+.ji .per{position:absolute;left:25px;top:0;width:30px;animation:nod 3.2s ease-in-out infinite}
+.ji .per svg{width:30px;height:30px}
+.ji .esc{position:absolute;left:4px;top:30px;width:70px;height:14px;background:#6b4a2b;border:2px solid #8b6540;border-radius:3px;box-shadow:0 2px 0 #3a2814}
+.ji .pc{top:14px;left:8px;width:22px;height:16px}
+.ji .mn{position:absolute;top:27px;width:5px;height:5px;border-radius:50%;background:#f1c9a5;animation:tp .5s ease-in-out infinite}
+.ji .mn.b{animation-delay:.25s}
+@keyframes tp{50%{transform:translateY(-3px)}}
+.sec{display:flex;align-items:center;gap:4px;cursor:pointer}.sec svg{width:30px;height:30px}
+.erow{display:flex;border-bottom:2px solid #31465c}.erow:last-child{border-bottom:0}
+.lc{width:300px;flex-shrink:0;display:flex;flex-direction:column;background:#1f2e3d;border-right:3px solid #3b5068}
+.lc .half{flex:1;display:flex;border-bottom:2px solid #31465c;min-height:64px}.lc .half:last-child{border-bottom:0}
+.rm{flex:1;padding:6px;font-size:12px;color:#9fb1c4;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-right:2px solid #31465c;line-height:1.3}
+.rm:last-child{border-right:0}
+.rm.back{flex:1;background:#1a2733;color:#7d92a8}.rm.front{flex:1.2}
+.rm.tur{background:#7f1d1d;color:#fecaca}
+.rm.jefe{background:#243a52;color:#c7d6e6;font-weight:600}
+.rm.bod{background:#3a2f12;color:#fcd34d;font-weight:700;font-size:13px}.rm.bod a{margin-top:6px;background:#b8921e;color:#111;padding:6px 10px;border-radius:6px;text-decoration:none;font-size:12px}
+.rm.asc{background:#2a3340}
+.rm small{font-size:10.5px;color:inherit;opacity:.8;font-weight:400}
+.left{width:150px;display:flex;flex-direction:column;border-right:3px solid #3b5068;background:#1f2e3d}
+.room{flex:1;border-bottom:2px solid #3b5068;padding:8px;font-size:12px;color:#8ea3b8;display:flex;align-items:center;justify-content:center;text-align:center;min-height:60px}
+.room:last-child{border-bottom:0}
+.room.big{flex:2}
+.pas{width:34px;flex-shrink:0;background:repeating-linear-gradient(0deg,#2c3f52 0 14px,#27384a 14px 28px);display:flex;align-items:center;justify-content:center}
+.pas span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;letter-spacing:3px;color:#7d92a8}
+.main{padding:10px 14px;flex:1}
+.main.ina{display:flex;align-items:center;min-height:calc(var(--t)*1.8 + 78px)}
+.bod{margin:14px 0 8px;padding:10px 14px;background:#3a2f12;border:2px solid #b8921e;border-radius:8px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.bod b{color:#fcd34d;font-size:15px}.bod a{margin-left:auto;background:#b8921e;color:#111;font-weight:700;font-size:13px;padding:8px 12px;border-radius:8px;text-decoration:none}
+.bod small{color:#d6c48a;font-size:12px}
+.eq{margin-bottom:12px}
+.row{display:flex;gap:4px}
+.aisle{width:calc(var(--W) + 6px);margin:4px 0;padding-top:4px;flex-direction:column;align-items:stretch;background:repeating-linear-gradient(90deg,#2c3f52 0 16px,#27384a 16px 32px);border-radius:4px;display:flex;font-size:12px;font-weight:700;letter-spacing:.5px;color:#cbd5e1;white-space:nowrap}
+.aisle .lbl{display:flex;align-items:center;gap:10px;padding:0 12px;height:20px}
+.lane{position:relative;height:40px;margin-top:2px}
+.av{position:absolute;top:0;width:var(--t);display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:left 2.2s ease-in-out;z-index:2}
+.av svg{width:26px;height:26px;animation:bob 2s ease-in-out infinite}
+.av.walk svg{animation:wk .35s linear infinite}
+@keyframes bob{50%{transform:translateY(-2px)}}
+@keyframes wk{0%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-3px) rotate(6deg)}100%{transform:translateY(0) rotate(-6deg)}}
+.av span{font-size:9px;line-height:1;color:#e2e8f0;background:rgba(15,23,42,.7);padding:1px 4px;border-radius:6px;margin-top:1px;max-width:70px;overflow:hidden;text-overflow:ellipsis}
+.av .al{position:absolute;top:-6px;right:calc(50% - 22px);font-size:12px;animation:bl 1s infinite}
+.aisle em{font-style:normal;font-weight:400;color:#8ea3b8;font-size:11px}
+.aisle .go{margin-left:auto;font-weight:400;color:#8ea3b8;font-size:11px}
+.t{width:var(--t);height:calc(var(--t)*.9);border-radius:6px;border:2px solid #475569;background:#334155;color:#cbd5e1;font-size:calc(var(--t)*.23);font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;flex-shrink:0;font-family:inherit;line-height:1.15;overflow:hidden}
+.t small{font-size:calc(var(--t)*.17);font-weight:400;opacity:.85}
+.t.run{background:#065f46;border-color:#10b981;color:#d1fae5}
+.t.run::after{content:'';position:absolute;left:0;bottom:0;height:3px;width:100%;background:linear-gradient(90deg,transparent,#6ee7b7,transparent);background-size:50% 100%;animation:mv 1.4s linear infinite}
+@keyframes mv{from{background-position:-100% 0}to{background-position:200% 0}}
+.t.stop{background:#7f1d1d;border-color:#ef4444;color:#fee2e2;animation:bl 1.1s ease-in-out infinite}
+@keyframes bl{50%{background:#991b1b;box-shadow:0 0 10px #ef4444}}
+.t.low{border-color:#f59e0b}
+.t .mn{position:absolute;top:0;right:1px;font-size:calc(var(--t)*.22)}
+.t.dim{opacity:.25}
+.tur{flex-shrink:0;width:calc(var(--t)*1.5);height:calc(var(--t)*.9);margin-left:auto;border:2px solid #ef4444;background:#7f1d1d;border-radius:6px;color:#fecaca;font-size:calc(var(--t)*.17);font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.1}
+.tur.alta{height:calc(var(--t)*1.9 + 34px);align-self:stretch}
+.inact{margin-bottom:12px;padding:8px 12px;border:1px dashed #4b5d70;border-radius:6px;font-size:12px;color:#6b7f93}
+.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:#8ea3b8;padding:0 14px 14px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:20;align-items:flex-end;justify-content:center}
+.ov.on{display:flex}
+.sh{background:#fff;color:#111827;width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:18px 18px 22px}
+.sh h2{font-size:22px;display:flex;align-items:center;gap:10px}
+.sh h2 .st{font-size:12px;padding:3px 10px;border-radius:20px;font-weight:700}
+.sh h2 button{margin-left:auto;border:0;background:#eef1f4;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer}
+.sh .sub{font-size:12.5px;color:#6b7785;margin:2px 0 12px}
+.sh dl{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;font-size:14px}
+.sh dt{color:#6b7785}.sh dd{font-weight:600}
+.sh a{display:block;margin-top:16px;text-align:center;background:#0f2942;color:#fff;font-weight:700;padding:13px;border-radius:10px;text-decoration:none}
+</style>
+<script src="demo-db.js"></script>
+</head>
+<body>
+<header>
+  <h1>🏭 Planta virtual</h1>
+  <div class="kp" id="kp"></div>
+  <div class="zb"><button onclick="zoom(-6)">−</button><button onclick="zoom(6)">+</button></div>
+  <div class="net" id="net">Conectando…</div>
+</header>
+<div class="scroll">
+  <div class="pw" id="pw"><div class="plant" id="plant"></div><div id="walk"></div></div>
+</div>
+<div class="leg"><span><i style="background:#10b981"></i>Corriendo</span><span><i style="background:#ef4444"></i>Parada</span><span><i style="background:#475569"></i>Sin lote abierto</span><span><i style="background:#f59e0b"></i>Eficiencia de hoy &lt; 75%</span><span>🔧 Mantenimiento vencido (&gt;120 días)</span></div>
+<div class="ov" id="ov" onclick="if(event.target===this)this.classList.remove('on')"><div class="sh" id="sh"></div></div>
+
+<script>
+var CFG={projectId:'demo'};
+// ===== PLANO (editable): orden de entrada al pasillo. "der" = fila de la derecha entrando (maquina 1 al fondo),
+// "izq" = fila de la izquierda, de la entrada al fondo (la ultima queda frente a la 1).
+var ORDEN_EQ = ['E1','E2'];
+var EQ_NOMBRE = {E1:'EQUIPO 1 · Tejido sin costura',E2:'EQUIPO 2 · Tejido sin costura'};
+var COLS_LON=5, EFF_MIN=75, MAQS=[], OPS=[], ABIERTOS={}, CERR={}, NOTAS=[], tam=50;
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
+function hoy(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function num(id){return parseInt(String(id).replace(/\D/g,''),10)||0;}
+function dias(f){var p=f.split('-');return Math.floor((Date.now()-new Date(+p[0],+p[1]-1,+p[2]).getTime())/864e5);}
+
+function filas(eqId){
+  var l=MAQS.filter(function(m){return m.teamId===eqId&&m.active!==false;}).sort(function(a,b){return num(a.id)-num(b.id);});
+
+  var n=Math.ceil(l.length/2);
+  var der=l.slice(0,n), izq=l.slice(n).reverse();
+  return {der:der, izq:izq};
+}
+function ultMant(id){var u=null;NOTAS.forEach(function(n){if(n.maqId===id&&n.tipoN==='Mantenimiento'&&(!u||n.fecha>u))u=n.fecha;});return u;}
+function stOf(id){
+  var r=ABIERTOS[id]; if(!r) return 'free';
+  return r.parado?'stop':'run';
+}
+function effHoy(id){var c=CERR[id];if(!c||!c.n)return null;return Math.round(c.s/c.n);}
+function esSan(eq){return false;}
+// Largo del pasillo del equipo.
+function twOf(eq){var W=COLS_LON*(tam+4)-4; if(!esSan(eq))return tam; var n=Math.max(9,Math.ceil(MAQS.filter(function(m){return m.teamId===eq&&m.active!==false;}).length/2)); return (W-(n-1)*4)/n;}
+function tile(m){
+  var st=stOf(m.id), e=effHoy(m.id), um=ultMant(m.id), venc=um?dias(um)>120:false;
+  var cls='t '+(st==='free'?'':st)+((e!==null&&e<EFF_MIN)?' low':'');
+  var r=ABIERTOS[m.id];
+  var sub=st==='stop'?esc(r.parado.mot||'paro'):(r?esc(r.refId||''):(e!==null?e+'%':''));
+  return '<button data-m="'+esc(m.id)+'" class="'+cls+'" style="width:'+twOf(m.teamId)+'px" onclick="det(\''+esc(m.id)+'\')">'+(venc?'<span class="mn">🔧</span>':'')+esc(m.id)+'<small>'+sub+'</small></button>';
+}
+function estantes(fila){
+  var n=COLS_LON,h='';
+  for(var i=0;i<n;i++){
+    var k=(i*7+fila*3)%5, lv='<div class="lv"><i></i><i></i><i></i></div>';
+    h+= k===3 ? '<div class="est pal" style="width:'+tam+'px"><div class="lv"><i></i><i></i></div><div class="lv"><i></i><i></i><i></i></div><div class="pl"></div></div>'
+              : '<div class="est" style="width:'+tam+'px">'+lv+lv+lv+'</div>';
+  }
+  return h;
+}
+function render(){
+  var h='',run=0,stop=0,free=0,mnt=0, nAb=Object.keys(ABIERTOS).length;
+  var MC='<div class="mc"><div class="ch"><i></i><i></i><i></i></div><div class="tb"></div><div class="ch"><i></i><i></i><i></i></div></div>';
+  var LEFT={
+    E1:'<div class="half"><div style="width:104px;display:flex;flex-direction:column;justify-content:center;padding:5px;gap:5px;border-right:2px solid #31465c"><div class="rm asc" style="flex:0 0 52px;border:2px solid #4b5d70;border-radius:4px">🛗 Ascensor 2<small>2.000 kg</small></div><div class="rm asc" style="flex:0 0 52px;border:2px solid #4b5d70;border-radius:4px">🛗 Ascensor 1<small>1.000 kg</small></div></div><div class="rm aco" style="flex:1" id="acopio"><small>Acopio de lotes<br>junto a los ascensores</small><div class="pila" id="pila"></div></div></div>',
+    E2:'<div class="half"><div class="rm back" style="flex:1"><div class="dec">'+MC+MC+'</div>🍽 Comedor</div><div class="rm front" style="flex:1"><div class="ji" onclick="detRol(\'sec\')"><div class="pc"></div><div class="per">'+persona('jefeinfo',{color:'#0f766e',long:true})+'</div><div class="esc"></div></div><small>Jefe de información</small></div><div class="rm" style="flex:0 0 64px">🚻</div></div>'
+  };;;
+  // Bodega MP: fila completa, con estanteria y cajas a lado y lado del pasillo
+  var f2=filas('E2'), rng=f2.izq.length?(f2.izq[0].id+' – '+f2.izq[f2.izq.length-1].id):'';
+  h+='<div class="erow bodega"><div class="lc"><div class="half"><div class="rm">📦 Bodega de materia prima<small>conos de hilo por título y lote'+''+'</small></div></div></div>'+
+     '<div class="pas"></div><div class="main"><div class="eq">'+
+     '<div class="row">'+estantes(0)+'</div>'+
+     '<div class="aisle"><div class="lbl">BODEGA MP <em>'+nAb+' máquinas con lote abierto</em><a class="go" href="materia.html">Pedido de hilo de hoy →</a></div><div class="lane" id="ln-BOD"></div></div>'+
+     '<div class="row">'+estantes(1)+'</div>'+
+     '</div></div></div>';
+
+  ORDEN_EQ.forEach(function(eq){
+    var f=filas(eq), tot=f.der.length+f.izq.length; if(!tot) return;
+    var r=0,s=0;
+    f.der.concat(f.izq).forEach(function(m){var st=stOf(m.id);if(st==='run'){run++;r++;}else if(st==='stop'){stop++;s++;}else free++; var u=ultMant(m.id);if(u&&dias(u)>120)mnt++;});
+    var tur=function(alta){return '<div class="tur'+(alta?' alta':'')+'">🌀<br>Turbina de succión</div>';};
+    h+='<div class="erow"><div class="lc">'+(LEFT[eq]||'')+'</div><div class="pas">'+(eq==='E2'?'<span>PASILLO</span>':'')+'</div><div class="main"><div class="eq"><div class="row">'+f.izq.map(tile).join('')+(eq==='E3'?tur(false):'')+'</div>'+
+       '<div class="aisle"><div class="lbl">'+EQ_NOMBRE[eq]+' <em>'+r+' corriendo · '+s+' paradas · '+(tot-r-s)+' sin lote</em></div><div class="lane" id="ln-'+eq+'"></div></div>'+
+       '<div class="row">'+f.der.map(tile).join('')+(eq==='E2'?tur(false):'')+'</div></div></div></div>';
+  });
+  document.getElementById('plant').innerHTML=h;
+  document.getElementById('kp').innerHTML='<span class="k run">▶ '+run+' corriendo</span><span class="k stop">■ '+stop+' paradas</span><span class="k free">○ '+free+' sin lote</span>'+(mnt?'<span class="k mnt">🔧 '+mnt+' mant.</span>':'');
+  dibujarAv();
+}
+// ===== AVATARES: un operario por equipo, de pie frente a sus maquinas abiertas =====
+var AV={}, _walkT={};
+var COLS=['#2563eb','#db2777','#d97706','#7c3aed','#0d9488','#dc2626','#4d7c0f','#0891b2'], PIEL=['#f1c9a5','#e0ac85','#c68642','#8d5524'];
+function hsh(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h);}
+function persona(seed,o){
+  o=o||{}; var h=hsh(seed),c=o.color||COLS[h%COLS.length],p=PIEL[(h>>3)%PIEL.length],pelo=o.pelo||['#2b1d12','#111','#6b3f1d','#a16207'][(h>>5)%4];
+  return '<svg viewBox="0 0 26 26">'+(o.long?'<path d="M5 8c0-5 3-7 8-7s8 2 8 7v11c-2 0-3-2-3-4V9H8v6c0 2-1 4-3 4z" fill="'+pelo+'"/>':'')+'<path d="M4 26c0-7 4-10 9-10s9 3 9 10z" fill="'+c+'"/>'+(o.chaleco?'<path d="M8 26l1-9h2v9zM18 26l-1-9h-2v9z" fill="'+o.chaleco+'"/>':'')+'<circle cx="13" cy="9" r="6" fill="'+p+'"/>'+(o.long?'<path d="M7 8c0-4 3-5 6-5s6 1 6 5c-2-1.5-4-2-6-2s-4 .5-6 2z" fill="'+pelo+'"/>':'<path d="M7 8c0-4 3-6 6-6s6 2 6 6c-2-2-4-3-6-3s-4 1-6 3z" fill="'+pelo+'"/>')+(o.gorra?'<path d="M6 7c0-4 3-6 7-6s7 2 7 6z" fill="'+o.gorra+'"/>':'')+'</svg>';
+}
+function svgAv(id,alerta){
+  var h=hsh(id),c=COLS[h%COLS.length],p=PIEL[(h>>3)%PIEL.length],pelo=['#2b1d12','#111','#6b3f1d','#a16207'][(h>>5)%4];
+  return '<svg viewBox="0 0 26 26"><path d="M4 26c0-7 4-10 9-10s9 3 9 10z" fill="'+c+'"/><circle cx="13" cy="9" r="6" fill="'+p+'"/><path d="M7 8c0-4 3-6 6-6s6 2 6 6c-2-2-4-3-6-3s-4 1-6 3z" fill="'+pelo+'"/></svg>';
+}
+function nomOp(id){var o=OPS.filter(function(x){return x.id===id;})[0];return o?String(o.name).split(' ')[0]:String(id||'');}
+function grupos(){
+  var g={};
+  MAQS.forEach(function(m){var r=ABIERTOS[m.id]; if(!r||!r.opId)return; var k=m.teamId+'|'+r.opId;
+    (g[k]=g[k]||{eq:m.teamId,op:r.opId,maqs:[],stop:false}).maqs.push(m.id); if(r.parado)g[k].stop=true;});
+  return g;
+}
+function colDe(eq,id){var f=filas(eq),i=f.der.map(function(m){return m.id;}).indexOf(id);if(i>=0)return i;return f.izq.map(function(m){return m.id;}).indexOf(id);}
+function dibujarAv(){
+  var g=grupos();
+  Object.keys(g).forEach(function(k){
+    var x=g[k],lane=document.getElementById('ln-'+x.eq); if(!lane)return;
+    var cols=x.maqs.map(function(id){return colDe(x.eq,id);}).filter(function(c){return c>=0;}); if(!cols.length)return;
+    var st=AV[k]||(AV[k]={});
+    if(st.col==null||cols.indexOf(st.col)<0) st.col=cols[Math.floor(cols.length/2)];
+    st.cols=cols; st.prev=st.left;
+    var left=st.col*(twOf(x.eq)+4);
+    var el=document.createElement('div'); el.className='av'; el.id='av-'+k.replace('|','_'); el.setAttribute('data-k',k);
+    el.style.width=twOf(x.eq)+'px'; el.style.left=(st.prev!=null?st.prev:left)+'px';
+    el.innerHTML=(x.stop?'<b class="al">❗</b>':'')+svgAv(x.op)+'<span>'+esc(nomOp(x.op))+'</span>';
+    el.onclick=function(){detOp(k);};
+    lane.appendChild(el);
+    if(st.prev!=null&&st.prev!==left){el.classList.add('walk');setTimeout(function(){el.classList.remove('walk');},2300);}
+    requestAnimationFrame(function(){requestAnimationFrame(function(){el.style.left=left+'px';});});
+    st.left=left;
+  });
+}
+function patrulla(){
+  var g=grupos();
+  Object.keys(g).forEach(function(k){
+    var st=AV[k]; if(!st||!st.cols||st.cols.length<2||Math.random()<0.5)return;
+    var nc=st.cols[Math.floor(Math.random()*st.cols.length)]; if(nc===st.col)return;
+    st.col=nc; var el=document.querySelector('.av[data-k="'+k+'"]'); if(!el)return;
+    st.left=nc*(twOf(k.split('|')[0])+4); el.classList.add('walk'); el.style.left=st.left+'px';
+    setTimeout(function(){el.classList.remove('walk');},2300);
+  });
+}
+function detOp(k){
+  var x=grupos()[k]; if(!x)return;
+  var h='<h2>'+esc(nomOp(x.op))+(x.stop?'<span class="st" style="background:#fee2e2;color:#991b1b">Con paro</span>':'<span class="st" style="background:#d1fae5;color:#065f46">Tejiendo</span>')+'<button onclick="document.getElementById(\'ov\').classList.remove(\'on\')">✕</button></h2><div class="sub">Equipo '+esc(x.eq)+' · '+x.maqs.length+' máquinas abiertas</div><dl>';
+  x.maqs.sort(function(a,b){return num(a)-num(b);}).forEach(function(id){var r=ABIERTOS[id];h+='<dt>'+esc(id)+'</dt><dd>'+esc(r.refId||'')+(r.parado?' · <span style="color:#b91c1c">'+esc(r.parado.mot||'paro')+'</span>':'')+'</dd>';});
+  h+='</dl>';
+  document.getElementById('sh').innerHTML=h; document.getElementById('ov').classList.add('on');
+}
+function setW(){document.documentElement.style.setProperty('--W',(COLS_LON*(tam+4)-4)+'px');}
+// ===== PERSONAL QUE CAMINA: enconador (surte hilo) y planillero (recoge lotes cerrados) =====
+var COLL={}, collInit=false, WK={};
+var ROLES={sec:['Jefe de información','Maneja la información de la planta desde su escritorio.'],enc:['Enconador','Sale de la bodega de materia prima con el montacargas y lleva las cajas de conos de hilo a las máquinas que están corriendo.'],pla:['Planillero','Recorre los equipos con el portátil en una mesita con ruedas: graba cada lote completo, lo sube a IBM y lleva las cajas rojas al acopio junto a los ascensores.']};
+function detRol(k){var r=ROLES[k],w=WK[k];var h='<h2>'+r[0]+'<button onclick="document.getElementById(\'ov\').classList.remove(\'on\')">✕</button></h2><div class="sub">'+r[1]+'</div>'+(w&&w.nota?'<dl><dt>Ahora</dt><dd>'+esc(w.nota)+'</dd></dl>':'');document.getElementById('sh').innerHTML=h;document.getElementById('ov').classList.add('on');}
+function rel(el){var r=el.getBoundingClientRect(),w=document.getElementById('pw').getBoundingClientRect();return {x:r.left-w.left+r.width/2,y:r.top-w.top+r.height/2};}
+function pasX(){var e=document.querySelector('.pas');return e?rel(e).x:60;}
+function laneY(eq){var e=document.getElementById('ln-'+eq);return e?rel(e).y+4:null;}
+function tilePos(id){var t=document.querySelector('.t[data-m="'+id+'"]');if(!t)return null;var m=MAQS.filter(function(x){return String(x.id)===id;})[0];var ly=m?laneY(m.teamId):null;if(ly==null)return null;return {x:rel(t).x,y:ly};}
+function mkWk(k,html,nm){
+  var el=document.createElement('div');el.className='wk';el.innerHTML=html+'<span>'+nm+'</span><b class="bb"></b>';el.onclick=function(){detRol(k);};
+  document.getElementById('walk').appendChild(el);
+  var w=WK[k]={el:el,x:0,y:0,busy:false,nota:''};return w;
+}
+function place(w,x,y,dur){w.el.style.setProperty('--d',dur+'s');w.el.style.left=x+'px';w.el.style.top=y+'px';w.x=x;w.y=y;}
+function walkTo(w,tgt,done){
+  var legs=[{x:pasX(),y:w.y},{x:pasX(),y:tgt.y},{x:tgt.x,y:tgt.y}], i=0;
+  w.el.classList.add('go');
+  (function next(){
+    if(i>=legs.length){w.el.classList.remove('go');done&&done();return;}
+    var l=legs[i++],d=Math.hypot(l.x-w.x,l.y-w.y),t=Math.max(.05,d/170);
+    if(d<2){next();return;}
+    place(w,l.x,l.y,t);setTimeout(next,t*1000+30);
+  })();
+}
+function bubble(w,t){w.el.querySelector('.bb').textContent=t||'';}
+function montacargas(){
+  return '<svg viewBox="0 0 54 38">'+
+    // horquillas y mastil
+    '<path d="M2 31h12M14 3v30" stroke="#94a3b8" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
+    '<path d="M11 3v28" stroke="#64748b" stroke-width="2" fill="none" stroke-linecap="round"/>'+
+    // carga
+    '<g class="bx">'+
+      '<rect x="2.5" y="21" width="11" height="9.5" rx="1" fill="#c08a4e" stroke="#6b4423"/>'+
+      '<rect x="3.5" y="12" width="10" height="9" rx="1" fill="#d2a062" stroke="#6b4423"/>'+
+      '<path d="M8 12v9M8 21v9.5" stroke="#8a5f30" stroke-width="1"/>'+
+    '</g>'+
+    // cuerpo
+    '<path d="M18 31V19h16l5 5v7z" fill="#f97316" stroke="#9a3412"/>'+
+    '<path d="M34 20h3l3.4 4H34z" fill="#fed7aa"/>'+
+    // techo de la cabina
+    '<path d="M21 19V8h12v11" fill="none" stroke="#64748b" stroke-width="2"/>'+
+    '<path d="M20 8h14" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>'+
+    // conductor
+    '<path d="M23 19c0-4.6 2.2-6.6 4.6-6.6S32 14.4 32 19z" fill="#334155"/>'+
+    '<path d="M24 19l.8-5h1.6v5z" fill="#f97316"/><path d="M31 19l-.8-5h-1.6v5z" fill="#f97316"/>'+
+    '<circle cx="27.6" cy="11.4" r="3.4" fill="#e0ac85"/>'+
+    '<path d="M24.1 10.6c0-2.5 1.6-3.8 3.5-3.8s3.5 1.3 3.5 3.8c-.7-1.3-1.9-1.9-3.5-1.9s-2.8.6-3.5 1.9z" fill="#f97316"/>'+
+    // ruedas
+    '<circle cx="23" cy="32.5" r="3.4" fill="#1f2937"/><circle cx="36" cy="32.5" r="3.4" fill="#1f2937"/>'+
+    '<circle cx="23" cy="32.5" r="1.2" fill="#9ca3af"/><circle cx="36" cy="32.5" r="1.2" fill="#9ca3af"/></svg>';
+}
+function carrito(){
+  return '<svg viewBox="0 0 54 36" class="cr">'+
+    // cajas rojas apiladas en la mesita
+    '<g class="bx3"><rect x="4" y="6" width="11" height="7" rx="1" fill="#ef4444" stroke="#7f1d1d"/></g>'+
+    '<g class="bx2"><rect x="3.5" y="13" width="12" height="7" rx="1" fill="#dc2626" stroke="#7f1d1d"/></g>'+
+    '<g class="bx1"><rect x="3" y="20" width="13" height="7" rx="1" fill="#b91c1c" stroke="#7f1d1d"/></g>'+
+    // portatil al otro extremo de la mesita
+    '<path d="M17.5 27v-4h8v4z" fill="#1e293b" stroke="#64748b"/>'+
+    '<path d="M18.5 23v-7h8.5v7z" fill="#334155" stroke="#94a3b8"/>'+
+    '<path d="M19.6 17h6.3v5h-6.3z" fill="#60a5fa"/>'+
+    // mesita con ruedas y manija
+    '<path d="M2 27h26M4 27v6M26 27v6M28 27v-7" stroke="#94a3b8" stroke-width="2" fill="none" stroke-linecap="round"/>'+
+    '<circle cx="4.5" cy="33.5" r="2.2" fill="#1f2937"/><circle cx="26" cy="33.5" r="2.2" fill="#1f2937"/>'+
+    // planillero empujando
+    '<path d="M28 21l6 2" stroke="#e0ac85" stroke-width="2.4" stroke-linecap="round"/>'+
+    '<path d="M31 34c0-7 2.6-10 5.4-10s5.4 3 5.4 10z" fill="#1d4ed8"/>'+
+    '<path d="M33.6 34l.8-8h1.5v8zM40 34l-.8-8h-1.5v8z" fill="#1e3a8a"/>'+
+    '<circle cx="36.4" cy="18.6" r="4" fill="#e0ac85"/>'+
+    '<path d="M32.3 17.6c0-2.9 1.9-4.4 4.1-4.4s4.1 1.5 4.1 4.4c-.8-1.5-2.2-2.2-4.1-2.2s-3.3.7-4.1 2.2z" fill="#facc15"/></svg>';
+}
+function startWalkers(){
+  var b=document.getElementById('ln-BOD');if(!b||!document.querySelector('.pas')){setTimeout(startWalkers,800);return;}
+  if(WK.enc)return;
+  var bp=rel(b);
+  var e=mkWk('enc',montacargas(),'Enconador');e.el.classList.add('enc');e.fk=e.el.querySelector('svg');e.fk.classList.add('fk','load');
+  var p=mkWk('pla',carrito(),'Planillero');p.el.classList.add('pla');p.cr=p.el.querySelector('svg');p.carga=0;
+  place(e,pasX(),bp.y+14,0);place(p,pasX(),bp.y+14,0);
+  var nEnc=0;
+  (function loopE(){
+    var run=Object.keys(ABIERTOS).filter(function(id){return !ABIERTOS[id].parado&&tilePos(id);});
+    if(!run.length||e.carga){ // vuelve a la bodega por mas cajas
+      nEnc++;e.nota='Cargando cajas de hilo en la bodega';
+      walkTo(e,{x:bp.x,y:bp.y},function(){bubble(e,'📦');setTimeout(function(){e.fk.classList.add('load');e.carga=0;bubble(e,'');loopE();},2200);});return;}
+    var id=run[Math.floor(Math.random()*run.length)];nEnc++;
+    e.nota='Llevando materia prima a '+id;
+    walkTo(e,tilePos(id),function(){bubble(e,'🧵');e.fk.classList.remove('load');e.carga=1;
+      setTimeout(function(){bubble(e,'');loopE();},2000);});
+  })();
+  var nPil=0;
+  function acopiar(){
+    var z=document.getElementById('pila');if(!z)return;
+    for(var i=0;i<p.carga;i++){var c=document.createElement('div');c.className='cjr';z.appendChild(c);}
+    while(z.children.length>18)z.removeChild(z.firstChild);
+  }
+  (function loopP(){
+    if(p.carga>=3){ // mesita llena: la lleva al acopio junto a los ascensores
+      var a=document.getElementById('acopio');
+      p.nota='Llevando las cajas al acopio junto a los ascensores';bubble(p,'📦');
+      walkTo(p,a?rel(a):{x:pasX(),y:p.y},function(){acopiar();p.carga=0;p.cr.className.baseVal='cr';
+        bubble(p,'✔');setTimeout(function(){bubble(p,'');loopP();},1800);});
+      return;}
+    var pend=Object.keys(CERR).filter(function(k){return CERR[k].n>(COLL[k]||0)&&tilePos(k);}).sort(function(a,b){return CERR[a].last-CERR[b].last;});
+    if(pend.length){var id=pend[0];p.nota='Grabando el lote de '+id+' y subiéndolo a IBM';bubble(p,'💻');
+      walkTo(p,tilePos(id),function(){COLL[id]=CERR[id].n;
+        setTimeout(function(){p.carga++;p.cr.className.baseVal='cr c'+p.carga;p.nota='Lote de '+id+' grabado';bubble(p,'✔');
+          setTimeout(function(){bubble(p,'');loopP();},1200);},1400);});return;}
+    var eqs=ORDEN_EQ.filter(function(q){return laneY(q)!=null;});
+    if(!eqs.length){setTimeout(loopP,2000);return;}
+    var q=eqs[nPil++%eqs.length],tg={x:pasX()+60+Math.random()*500,y:laneY(q)};
+    p.nota='Recorriendo los equipos en busca de lotes completos';
+    walkTo(p,tg,function(){setTimeout(loopP,3000);});
+  })();
+}
+function zoom(d){tam=Math.max(30,Math.min(90,tam+d));document.documentElement.style.setProperty('--t',tam+'px');setW();AV={};render();}
+
+function det(id){
+  var m=MAQS.filter(function(x){return String(x.id)===id;})[0]||{id:id}, r=ABIERTOS[id], st=stOf(id), e=effHoy(id), um=ultMant(id);
+  var op=''; if(r){var o=OPS.filter(function(x){return x.id===r.opId;})[0]; op=o?o.name:(r.opId||'');}
+  var c=CERR[id];
+  var badge=st==='run'?'<span class="st" style="background:#d1fae5;color:#065f46">Corriendo</span>':st==='stop'?'<span class="st" style="background:#fee2e2;color:#991b1b">Parada</span>':'<span class="st" style="background:#e5e7eb;color:#374151">Sin lote</span>';
+  var h='<h2>'+esc(id)+badge+'<button onclick="document.getElementById(\'ov\').classList.remove(\'on\')">✕</button></h2><div class="sub">'+esc(((m.model||'')+' '+(m.diam||'')+' · Equipo '+(m.teamId||'')).trim())+'</div><dl>';
+  if(r){
+    h+='<dt>Operario</dt><dd>'+esc(op||'—')+'</dd><dt>Referencia</dt><dd>'+esc(r.refId||'—')+'</dd><dt>Desde</dt><dd>'+esc(r.hi||'')+' · contador '+esc(r.ctrStart)+'</dd>';
+    if(r.parado) h+='<dt>Motivo de paro</dt><dd style="color:#b91c1c">'+esc(r.parado.mot||'')+'</dd>';
+  }
+  h+='<dt>Eficiencia hoy</dt><dd>'+(e!==null?e+'% ('+c.n+' lotes cerrados)':'—')+'</dd>';
+  h+='<dt>Último mant.</dt><dd>'+(um?um.split('-').reverse().join('/')+' · hace '+dias(um)+' d':'Sin registro')+'</dd></dl>';
+  h+='<a href="maquinas.html?m='+encodeURIComponent(id)+'">🔧 Abrir hoja de vida</a>';
+  document.getElementById('sh').innerHTML=h;
+  document.getElementById('ov').classList.add('on');
+}
+
+function init(){
+  setW();
+  MAQS=(lsGet('gf_maqs',[])||[]).filter(function(m){return m&&m.id;});
+  OPS=lsGet('gf_ops',[])||[];
+  NOTAS=lsGet('mv_notas',[]);
+  var q=new URLSearchParams(location.search);
+  render();
+  try{
+    firebase.initializeApp(CFG); var db=firebase.firestore(), col=db.collection('fichas');
+    col.doc('GF-OPS-CONFIG').get().then(function(d){
+      if(!d.exists)return; var x=d.data();
+      if(x.maqs&&x.maqs.length)MAQS=x.maqs.filter(function(m){return m&&m.id;});
+      if(x.ops&&x.ops.length)OPS=x.ops; render();
+    }).catch(function(){});
+    var oK=function(e){document.getElementById('net').textContent='○ Sin conexión — mostrando lo último recibido';};
+    col.where('tipo','==','lote').where('status','==','abierto').onSnapshot(function(s){
+      var a={}; s.forEach(function(d){var x=d.data(); if(x&&!x._del&&x.maqId) a[x.maqId]=x;});
+      ABIERTOS=a; document.getElementById('net').textContent='● En vivo · '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}); render();
+    },oK);
+    col.where('tipo','==','lote').where('fecha','==',hoy()).onSnapshot(function(s){
+      var c={}; s.forEach(function(d){var x=d.data(); if(x&&!x._del&&x.status==='cerrado'&&typeof x.eff==='number'){var k=c[x.maqId]||(c[x.maqId]={s:0,n:0,last:0});k.s+=x.eff;k.n++;k.last=Math.max(k.last,x.ts||0);}});
+      CERR=c; if(!collInit){collInit=true;Object.keys(c).forEach(function(k){COLL[k]=c[k].n;});} render();
+    },oK);
+    col.where('tipo','==','maq_nota').onSnapshot(function(s){NOTAS=[];s.forEach(function(d){NOTAS.push(d.data());});render();},function(){});
+  }catch(e){document.getElementById('net').textContent='○ Sin conexión';}
+  setTimeout(startWalkers,900);
+  setInterval(render,60000); setInterval(patrulla,6000);
+}
+init();
+</script>
+</body>
+</html>

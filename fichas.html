@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gestión Fábrica · Fichas técnicas</title>
+<meta name="theme-color" content="#0f2942">
+<script src="demo-db.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#f3f5f7;color:#111827;min-height:100vh;padding-bottom:46px;font-size:14px}
+header{background:#0f2942;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:5}
+header h1{font-size:17px}
+header .sub{font-size:11.5px;color:#8ea3b8;margin-top:2px}
+header a{color:#c3ccd6;font-size:12px;text-decoration:none;float:right;margin-top:-18px}
+main{padding:14px 12px;max-width:1150px;margin:0 auto}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+input{font-family:inherit;font-size:14px;padding:9px 12px;border:1px solid #cbd2d9;border-radius:8px;flex:1;min-width:200px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.c{background:#fff;border:1px solid #dde1e6;border-left:5px solid #0f2942;border-radius:10px;padding:12px;cursor:pointer;text-align:left;font-family:inherit;font-size:14px}
+.c:active{background:#eef1f4}
+.c b{display:block;font-size:15px}
+.c .cod{font-size:11.5px;color:#6b7785;font-weight:700;letter-spacing:.4px}
+.c .mt{font-size:12px;color:#374151;margin-top:6px}
+.tag{display:inline-block;background:#eef1f4;border-radius:10px;padding:2px 8px;font-size:11px;margin:4px 4px 0 0;color:#374151}
+.ov{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;z-index:20;overflow:auto;padding:22px 10px}
+.ov.on{display:block}
+.sheet{background:#fff;border-radius:14px;max-width:720px;margin:0 auto;padding:18px}
+.sheet h2{font-size:20px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:2px}
+.sheet .sub{color:#6b7785;font-size:12.5px;margin-bottom:12px}
+table{border-collapse:collapse;width:100%;font-size:13px;margin-bottom:12px}
+th,td{border:1px solid #e4e7eb;padding:6px 9px;text-align:left}
+th{background:#eef1f4;font-size:12px;text-transform:uppercase;letter-spacing:.3px;color:#475569}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.x{border:0;background:#eef1f4;border-radius:50%;width:34px;height:34px;font-size:17px;cursor:pointer;flex:none}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.kpi div{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;flex:1;min-width:120px}
+.kpi span{display:block;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.3px}
+.kpi b{font-size:18px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Fichas técnicas</h1>
+  <div class="sub">Composición de hilo, peso y tiempo estándar de cada referencia</div>
+  <a href="index.html">← Panel</a>
+</header>
+<main>
+  <div class="bar"><input id="q" placeholder="Buscar por código o nombre…" oninput="render()"><span class="tag" id="n"></span></div>
+  <div class="grid" id="g"></div>
+</main>
+<div class="ov" id="ov" onclick="if(event.target===this)cerrar()"><div class="sheet" id="sheet"></div></div>
+<script>
+var F = [];
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function $(i){return document.getElementById(i);}
+function init(){
+  var db = firebase.firestore(), FP = firebase.firestore.FieldPath;
+  db.collection('fichas').where(FP.documentId(), '>=', 'SW-').where(FP.documentId(), '<', 'SW-').get().then(function(s){
+    F = []; s.forEach(function(d){ var x = d.data(); x._id = d.id; F.push(x); });
+    F.sort(function(a,b){ return (a.header.referencia||'').localeCompare(b.header.referencia||''); });
+    render();
+  });
+}
+function tiempo(f){ return (+f.specs.tiempoMin || 0) + (+f.specs.tiempoSeg || 0)/60; }
+function render(){
+  var q = ($('q').value||'').toLowerCase();
+  var l = F.filter(function(f){ return !q || (f.header.referencia+' '+f.nombrePrenda).toLowerCase().indexOf(q) >= 0; });
+  $('n').textContent = l.length + ' de ' + F.length + ' referencias';
+  $('g').innerHTML = l.map(function(f,i){
+    return '<button class="c" onclick="ver(\'' + esc(f._id) + '\')">' +
+      '<span class="cod">' + esc(f.header.referencia) + '</span><b>' + esc(f.nombrePrenda) + '</b>' +
+      '<div class="mt">' + f.specs.pesoUnitarioGramos + ' g · ' + f.header.tubosPorDocena + ' tubos/doc · ' + tiempo(f).toFixed(1) + ' min/tubo</div>' +
+      f.fibras.map(function(x){ return '<span class="tag">' + esc(x.nombre) + ' ' + x.porcentaje + '%</span>'; }).join('') +
+    '</button>';
+  }).join('') || '<div class="tag">Sin resultados</div>';
+}
+function ver(id){
+  var f = F.filter(function(x){ return x._id === id; })[0]; if(!f) return;
+  var t = tiempo(f), doc = +f.header.tubosPorDocena, peso = +f.specs.pesoUnitarioGramos;
+  $('sheet').innerHTML = '<h2><span>' + esc(f.nombrePrenda) + '</span><button class="x" onclick="cerrar()">✕</button></h2>' +
+    '<div class="sub">Referencia ' + esc(f.header.referencia) + ' · ' + esc(f.header.cliente||'') + ' · galga ' + (f.specs.galga||'—') + '</div>' +
+    '<div class="kpi"><div><span>Peso por tubo</span><b>' + peso + ' g</b></div>' +
+    '<div><span>Tubos por docena</span><b>' + doc + '</b></div>' +
+    '<div><span>Tiempo por tubo</span><b>' + t.toFixed(2) + ' min</b></div>' +
+    '<div><span>Estándar por docena</span><b>' + (t*doc).toFixed(1) + ' min</b></div></div>' +
+    '<table><tr><th>Fibra</th><th>Título</th><th>Lote</th><th>Ítem</th><th>%</th><th>Gramos por tubo</th></tr>' +
+    f.fibras.map(function(x){
+      return '<tr><td>' + esc(x.nombre) + '</td><td>' + esc(x.titulo) + '</td><td>' + esc(x.lote) + '</td><td>' + esc(x.itemS) + '</td>' +
+        '<td class="n">' + x.porcentaje + '%</td><td class="n">' + (peso*x.porcentaje/100).toFixed(1) + ' g</td></tr>';
+    }).join('') + '</table>' +
+    '<table><tr><th>Producción</th><th>Tubos</th><th>Hilo necesario</th></tr>' +
+    [['Una docena', doc], ['Un turno de 12 h al 85%', Math.round(12*60*0.85/t)], ['Mil docenas', doc*1000]].map(function(r){
+      return '<tr><td>' + r[0] + '</td><td class="n">' + r[1] + '</td><td class="n">' + (r[1]*peso/1000).toFixed(1) + ' kg</td></tr>';
+    }).join('') + '</table>' +
+    '<div class="sub">El módulo de materia prima usa estos datos para calcular el pedido de hilo de cada día.</div>';
+  $('ov').classList.add('on');
+}
+function cerrar(){ $('ov').classList.remove('on'); }
+init();
+</script>
+</body>
+</html>
